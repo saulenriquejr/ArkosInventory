@@ -155,5 +155,8 @@
       }
     }
   },
-  "defaultProject": "Arkos.WebUI"
+  "defaultProject": "Arkos.WebUI",
+  "cli": {
+    "analytics": "34fb10d6-2872-4d8d-b099-9787fa5cddb3"
+  }
 }
