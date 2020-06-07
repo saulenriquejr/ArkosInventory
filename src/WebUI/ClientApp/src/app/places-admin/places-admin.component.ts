@@ -1,14 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { PlacesVm, PlacesClient, PlaceDto } from '../arkos-api';
 import { faPlus, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
-import { BsModalService } from 'ngx-bootstrap/modal';
 
 @Component({
   selector: 'app-places-admin',
   templateUrl: './places-admin.component.html',
   styleUrls: ['./places-admin.component.css']
 })
-export class PlacesAdminComponent implements OnInit {
+export class PlacesAdminComponent {
 
   vm: PlacesVm;
 
@@ -17,8 +16,7 @@ export class PlacesAdminComponent implements OnInit {
   faPlus = faPlus;
   faEllipsisH = faEllipsisH;
 
-  constructor(private placesClient: PlacesClient,
-    private modalService: BsModalService) {
+  constructor(placesClient: PlacesClient) {
     placesClient.get().subscribe(
       result => {
         this.vm = result;
@@ -28,8 +26,4 @@ export class PlacesAdminComponent implements OnInit {
       }
     );
   }
-
-  ngOnInit(): void {
-  }
-
 }

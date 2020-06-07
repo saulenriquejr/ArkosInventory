@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Arkos.WebUI.Controllers
 {
-    [AllowAnonymous]
+    [Authorize]
     public class InvoicesController : ApiController
     {
         [HttpPost]

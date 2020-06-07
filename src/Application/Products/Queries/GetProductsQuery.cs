@@ -7,30 +7,30 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Arkos.Application.Places.Queries
+namespace Arkos.Application.Products.Queries
 {
-    public class GetPlacesQuery : IRequest<PlacesVm>
+    public class GetProductsQuery : IRequest<ProductsVm>
     {
 
     }
 
-    public class GetPlacesQueryHandler : IRequestHandler<GetPlacesQuery, PlacesVm>
+    public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, ProductsVm>
     {
         private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public GetPlacesQueryHandler(IApplicationDbContext context, IMapper mapper)
+        public GetProductsQueryHandler(IApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
         }
 
-        public async Task<PlacesVm> Handle(GetPlacesQuery request, CancellationToken cancellationToken)
+        public async Task<ProductsVm> Handle(GetProductsQuery request, CancellationToken cancellationToken)
         {
-            return new PlacesVm()
+            return new ProductsVm()
             {
-                Places = await _context.Places
-                .ProjectTo<PlaceDto>(_mapper.ConfigurationProvider)
+                Products = await _context.Products.Where(p => !p.Deleted)
+                .ProjectTo<ProductDto>(_mapper.ConfigurationProvider)
                 .OrderBy(t => t.Name)
                 .ToListAsync(cancellationToken)
             };

@@ -14,6 +14,7 @@ namespace Arkos.Domain.Entities
         }
         public int Id { get; set; }
         public string Name { get; set; }
+        public bool Deleted { get; set; }
         public ICollection<InvoiceDetail> InvoiceDetails { get; private set; }
         public ICollection<InventoryDetail> InventoryDetails { get; private set; }
     }

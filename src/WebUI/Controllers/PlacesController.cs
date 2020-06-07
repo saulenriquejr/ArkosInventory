@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Arkos.WebUI.Controllers
 {
-    [AllowAnonymous]
+    [Authorize]
     public class PlacesController : ApiController
     {
         [HttpGet]
