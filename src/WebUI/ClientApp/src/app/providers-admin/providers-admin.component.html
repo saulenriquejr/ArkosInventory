@@ -1,0 +1,71 @@
+<p *ngIf="!vm"><em>Cargando Proveedores...</em></p>
+
+<div *ngIf="vm">
+
+  <div class="row">
+    <div class="col-sm-4">
+      <div class="clearfix">
+        <h2 class="float-left">Proveedores</h2>
+        <button class="btn btn-default float-right" title="Crear Nuevo Proveedor..."
+                (click)="showNewProviderModal(newProviderModalTemplate)">
+          <fa-icon [icon]="faPlus"></fa-icon>
+        </button>
+      </div>
+    </div>
+    <div class="col-sm-8">
+      <ul id="providers" class="list-group mb-2">
+        <li class="list-group-item" *ngFor="let provider of providersList; index as i">
+          <div class="d-flex">
+            <div class="flex-fill">
+              <input id="{{ 'providerName' + i }}"
+                     *ngIf="provider == selectedProvider"
+                     type="text"
+                     class="form-control item-input-control"
+                     [(ngModel)]="provider.name"
+                     (keyup.enter)="updateProvider(provider, true)"
+                     (blur)="updateProvider(provider)"
+                     autofocus="autofocus" />
+              <div *ngIf="provider != selectedProvider"
+                   (click)="editProvider(provider, 'providerName' + i)"
+                   class="form-control item-input-control">
+                <span>{{ provider.name }}</span>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="debug">
+  <pre>{{ vm | json }}</pre>
+</div>
+
+<ng-template #newProviderModalTemplate>
+  <div class="modal-header clearfix">
+    <h4 class="modal-title float-left">Nuevo Proveedor</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="newProviderCancelled()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+      <label for="name">Nombre</label>
+      <input type="text" class="form-control" id="name" placeholder="Nombre del proveedor..." [(ngModel)]="newProviderEditor.name"
+             [ngClass]="{ 'is-invalid': newProviderEditor.error }" (keyup.enter)="addList()" />
+      <div *ngIf="newProviderEditor.error" class="invalid-feedback">
+        {{ newProviderEditor.error }}
+      </div>
+    </div>
+    <div *ngIf="debug">
+      <pre>{{ newListEditor | json }}</pre>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <div class="text-right">
+      <button class="btn btn-default" (click)="newProviderCancelled()">Cancelar</button>
+      <button class="btn btn-primary" (click)="addProvider()">Crear</button>
+    </div>
+  </div>
+</ng-template>

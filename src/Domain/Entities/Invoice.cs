@@ -15,6 +15,8 @@ namespace Arkos.Domain.Entities
         public DateTime DateInvoice { get; set; }
         public int PlaceId { get; set; }
         public Place Place { get; set; }
+        public int ProviderId { get; set; }
+        public Provider Provider { get; set; }
         public ICollection<InvoiceDetail> InvoiceDetails { get; private set; }
     }
 }

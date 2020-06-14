@@ -17,6 +17,7 @@ import { AuthorizeInterceptor } from 'src/api-authorization/authorize.intercepto
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { ProductsAdminComponent } from './products-admin/products-admin.component';
+import { ProvidersAdminComponent } from './providers-admin/providers-admin.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { ProductsAdminComponent } from './products-admin/products-admin.componen
     FetchDataComponent,
     TodoComponent,
     PlacesAdminComponent,
-    ProductsAdminComponent
+    ProductsAdminComponent,
+    ProvidersAdminComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -40,6 +42,7 @@ import { ProductsAdminComponent } from './products-admin/products-admin.componen
       { path: 'todo', component: TodoComponent, canActivate: [AuthorizeGuard] },
       { path: 'places', component: PlacesAdminComponent, canActivate: [AuthorizeGuard] },
       { path: 'products', component: ProductsAdminComponent, canActivate: [AuthorizeGuard] },
+      { path: 'providers', component: ProvidersAdminComponent, canActivate: [AuthorizeGuard] },
     ]),
     BrowserAnimationsModule,
     ModalModule.forRoot()

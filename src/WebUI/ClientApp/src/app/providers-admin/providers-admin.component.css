@@ -1,0 +1,10 @@
+#providers .item-input-control {
+  border: 0;
+  box-shadow: none;
+  background-color: transparent;
+}
+
+#providers .list-group-item {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}

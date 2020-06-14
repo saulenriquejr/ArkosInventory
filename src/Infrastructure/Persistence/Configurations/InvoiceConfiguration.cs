@@ -11,8 +11,14 @@ namespace Arkos.Infrastructure.Persistence.Configurations
             builder.HasOne(invoice => invoice.Place)
                 .WithMany(place => place.Invoices)
                 .HasForeignKey(invoice => invoice.PlaceId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Invoices_Places");
+
+            builder.HasOne(invoice => invoice.Provider)
+                .WithMany(provider => provider.Invoices)
+                .HasForeignKey(invoice => invoice.ProviderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Invoices_Providers");
         }
     }
 }

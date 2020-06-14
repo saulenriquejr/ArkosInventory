@@ -17,6 +17,8 @@
     <Compile Remove="Persistence\Migrations\20200524185827_Add-invoices-and_invoicedetails-tables.Designer.cs" />
     <Compile Remove="Persistence\Migrations\20200524210339_add-inventory-and-inventorydetail-tables.cs" />
     <Compile Remove="Persistence\Migrations\20200524210339_add-inventory-and-inventorydetail-tables.Designer.cs" />
+    <Compile Remove="Persistence\Migrations\20200607173248_invoice-add-provider.cs" />
+    <Compile Remove="Persistence\Migrations\20200607173248_invoice-add-provider.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

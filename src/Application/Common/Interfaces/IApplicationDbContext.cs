@@ -15,6 +15,7 @@ namespace Arkos.Application.Common.Interfaces
         DbSet<Invoice> Invoices { get; set; }
         DbSet<Inventory> Inventories { get; set; }
         DbSet<InventoryDetail> InventoryDetails { get; set; }
+        DbSet<Provider> Providers { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }

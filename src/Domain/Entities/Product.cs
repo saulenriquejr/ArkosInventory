@@ -1,7 +1,5 @@
 ﻿using Arkos.Domain.Common;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Arkos.Domain.Entities
 {
