@@ -18,6 +18,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { ProductsAdminComponent } from './products-admin/products-admin.component';
 import { ProvidersAdminComponent } from './providers-admin/providers-admin.component';
+import { InvoicesComponent } from './invoices/invoices.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import { ProvidersAdminComponent } from './providers-admin/providers-admin.compo
     TodoComponent,
     PlacesAdminComponent,
     ProductsAdminComponent,
-    ProvidersAdminComponent
+    ProvidersAdminComponent,
+    InvoicesComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -43,6 +45,7 @@ import { ProvidersAdminComponent } from './providers-admin/providers-admin.compo
       { path: 'places', component: PlacesAdminComponent, canActivate: [AuthorizeGuard] },
       { path: 'products', component: ProductsAdminComponent, canActivate: [AuthorizeGuard] },
       { path: 'providers', component: ProvidersAdminComponent, canActivate: [AuthorizeGuard] },
+      { path: 'invoices', component: InvoicesComponent, canActivate: [AuthorizeGuard] },
     ]),
     BrowserAnimationsModule,
     ModalModule.forRoot()

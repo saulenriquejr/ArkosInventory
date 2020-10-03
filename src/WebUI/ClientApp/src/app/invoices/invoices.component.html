@@ -1,1 +1,59 @@
-<p>invoices works!</p>
+<h1>Facturas</h1>
+
+<div class="row col-sm-4">
+  <div class="clearfix">
+    <h2 class="float-left">Agregar factura</h2>
+  </div>
+  <div class="form-group">
+    <label for="title">Fecha de Factura</label>
+    <input type="text" class="form-control" id="FechaFactura" placeholder="ingrese fecha de factura" [(ngModel)]="newInvoiceEditor.dateInvoice"
+           [ngClass]="{ 'is-invalid': newInvoiceEditor.error }" />
+    <div *ngIf="newInvoiceEditor.error" class="invalid-feedback"> {{ newInvoiceEditor.error }}
+    </div>
+    <label for="title">Nombre del Local</label>
+    <input type="text" class="form-control" id="NombreLocal" placeholder="ingrese nombre del local" [(ngModel)]="newInvoiceEditor.localName"
+           [ngClass]="{ 'is-invalid': newInvoiceEditor.error }" />
+    <div *ngIf="newInvoiceEditor.error" class="invalid-feedback"> {{ newInvoiceEditor.error }}
+    </div>
+  </div>
+  <div class="modal-footer">
+    <div class="text-right">
+      <button class="btn btn-default" (click)="newInvoiceReset()">Limpiar</button>
+      <button class="btn btn-primary" (click)="showNewInvoiceModal(newInvoiceDetailModalTemplate)">Agregar</button>
+    </div>
+  </div>
+</div>
+
+
+<ng-template #newInvoiceDetailModalTemplate>
+  <div class="modal-header clearfix">
+    <h4 class="modal-title float-left">Agregar Producto</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="newInvoiceDetailCancelled()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+      <label for="title">Nombre Producto</label>
+      <input type="text" class="form-control" id="productName" placeholder="ingrese nombre del producto" [(ngModel)]="newInvoiceDetailEditor.productName"
+             [ngClass]="{ 'is-invalid': newInvoiceDetailEditor.error }" />
+      <div *ngIf="newInvoiceDetailEditor.error" class="invalid-feedback">
+        {{ newInvoiceDetailEditor.error }}
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="title">Cantidad Producto</label>
+      <input type="text" class="form-control" id="NombreLocal" placeholder="ingrese cantidad del producto" [(ngModel)]="newInvoiceDetailEditor.productAmount"
+             [ngClass]="{ 'is-invalid': newInvoiceDetailEditor.error }"/>
+      <div *ngIf="newInvoiceDetailEditor.error" class="invalid-feedback">
+        {{ newInvoiceDetailEditor.error }}
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <div class="text-right">
+      <button class="btn btn-default" (click)="newInvoiceDetailCancelled()">Cancelar</button>
+      <button class="btn btn-primary" (click)="validateInvoiceDetail()">Agregar</button>
+    </div>
+  </div>
+</ng-template>
