@@ -1,7 +1,7 @@
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { faPlus, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
-import { PlacesClient, PlaceDto, InvoicesClient, CreateInvoiceDetailDto, ProductsClient } from '../arkos-api';
+import { PlacesClient, PlaceDto, InvoicesClient, CreateInvoiceDetailDto, ProductsClient, ProductDto, CreateInvoiceCommand } from '../arkos-api';
 
 @Component({
   selector: 'app-invoices',
@@ -11,20 +11,26 @@ import { PlacesClient, PlaceDto, InvoicesClient, CreateInvoiceDetailDto, Product
 export class InvoicesComponent implements OnInit {
 
   debug = false;
-  validInvoiceDetail: boolean = false;
   //m: InvoicesVm;
   newInvoiceEditor: any = {};
   newInvoiceDetailEditor: any = {};
   newInvoiceDetailModalRef: BsModalRef;
   place: PlaceDto;
+  productList: ProductDto[];
+  placeList: PlaceDto[];
+  invoiceDetailList: CreateInvoiceDetailDto[] = [];
   faPlus = faPlus;
   faEllipsisH = faEllipsisH;
 
   constructor(
     private modalService: BsModalService,
+    private invoicesClient: InvoicesClient,
     private placesClient: PlacesClient,
     private productsClient: ProductsClient
-  ) { }
+  ) {
+    this.placesClient.get().subscribe(
+      result => { this.placeList = result.places });
+  }
 
   ngOnInit(): void {
 
@@ -41,52 +47,45 @@ export class InvoicesComponent implements OnInit {
   }
 
   showNewInvoiceModal(template: TemplateRef<any>): void {
-    this.placesClient.get().subscribe(
-      result => {
-        this.place = result.places.find(c => c.name === this.newInvoiceEditor.localName);
-        if (this.place !=null) {
-          //let invoice = InvoiceDto.fromJS({
-          //  id: 0,
-          //  dateInvoice: place.name,
-          //  placeId: place.id
-          //});
-          this.newInvoiceDetailModalRef = this.modalService.show(template);
-          setTimeout(() => document.getElementById("product").focus(), 250);
-        }
-      }
-    );
+    if (this.newInvoiceEditor.place != null && this.newInvoiceEditor.dateInvoice) {
+      this.newInvoiceDetailModalRef = this.modalService.show(template);
+      this.getProducts();
+    }
   }
 
-  validateInvoiceDetail() {
-    //this.productsClient.get().subscribe(
-    //  result => {
-    //    this.product = result.products.filter(p =>p.)
-    //    if (this.place != null) {
-    //    }
-    //  }
-    //);
-    this.addInvoice();
+  getProducts(): void {
+    this.productsClient.get().subscribe(result => { this.productList = result.products });
+  }
+
+  addInvoiceDetail() {
+    if (this.newInvoiceDetailEditor.product.id != null && this.newInvoiceDetailEditor.amount != null) {
+      let invoiceDetail = CreateInvoiceDetailDto.fromJS({
+        productId: this.newInvoiceDetailEditor.product.id,
+        amount: this.newInvoiceDetailEditor.amount
+      });
+      this.invoiceDetailList.push(invoiceDetail);
+      this.newInvoiceDetailEditor = {};
+    }
   }
 
   addInvoice(): void {
+    if (this.invoiceDetailList.length > 0) {
+      this.invoicesClient.create(<CreateInvoiceCommand>{
+        dateInvoice: this.newInvoiceEditor.dateInvoice,
+        placeId: this.newInvoiceEditor.place.id,
+        invoiceDetails: this.invoiceDetailList,
+      }).subscribe(
+        result => {
+          this.newInvoiceDetailCancelled();
+        },
+        error => {
+          let errors = JSON.parse(error.response);
 
-    //this.listsClient.create(<CreateTodoListCommand>{ title: this.newListEditor.title }).subscribe(
-    //  result => {
-    //    list.id = result;
-    //    this.vm.lists.push(list);
-    //    this.selectedList = list;
-    //    this.newListModalRef.hide();
-    //    this.newListEditor = {};
-    //  },
-    //  error => {
-    //    let errors = JSON.parse(error.response);
-
-    //    if (errors && errors.Title) {
-    //      this.newInvoiceEditor.error = errors.Title[0];
-    //    }
-
-    //    setTimeout(() => document.getElementById("title").focus(), 250);
-    //  }
-    //);
+          if (errors && errors.Title) {
+            this.newInvoiceEditor.error = errors.Title[0];
+          }
+        }
+      );
+    }
   }
 }

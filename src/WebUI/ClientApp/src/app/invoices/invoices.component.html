@@ -4,17 +4,17 @@
   <div class="clearfix">
     <h2 class="float-left">Agregar factura</h2>
   </div>
-  <div class="form-group">
-    <label for="title">Fecha de Factura</label>
-    <input type="text" class="form-control" id="FechaFactura" placeholder="ingrese fecha de factura" [(ngModel)]="newInvoiceEditor.dateInvoice"
-           [ngClass]="{ 'is-invalid': newInvoiceEditor.error }" />
-    <div *ngIf="newInvoiceEditor.error" class="invalid-feedback"> {{ newInvoiceEditor.error }}
-    </div>
-    <label for="title">Nombre del Local</label>
-    <input type="text" class="form-control" id="NombreLocal" placeholder="ingrese nombre del local" [(ngModel)]="newInvoiceEditor.localName"
-           [ngClass]="{ 'is-invalid': newInvoiceEditor.error }" />
-    <div *ngIf="newInvoiceEditor.error" class="invalid-feedback"> {{ newInvoiceEditor.error }}
-    </div>
+  <div class="form-group container" id="dateInvoicetxt">
+    <label>Fecha de Factura:</label>
+    <input class="form-control" bsDatepicker placeholder="ingrese fecha de factura" [(ngModel)]="newInvoiceEditor.dateInvoice">
+  </div>
+
+  <div class="form-group container" id="placeNametxt">
+    <label>Nombre del Local:</label>
+    <select class="form-control" [(ngModel)]="newInvoiceEditor.place">
+      <option value="" disabled selected>seleccione un local</option>
+      <option *ngFor="let place of placeList" [ngValue]="place">{{place.name}}</option>
+    </select>
   </div>
   <div class="modal-footer">
     <div class="text-right">
@@ -33,27 +33,30 @@
     </button>
   </div>
   <div class="modal-body">
+    <div class="form-group" id="productNametxt">
+      <label>Producto:</label>
+      <select class="form-control" [(ngModel)]="newInvoiceDetailEditor.product">
+        <option value="" disabled selected>seleccione un producto</option>
+        <option *ngFor="let product of productList" [ngValue]="product">{{product.name}}</option>
+      </select>
+    </div>
+
     <div class="form-group">
-      <label for="title">Nombre Producto</label>
-      <input type="text" class="form-control" id="productName" placeholder="ingrese nombre del producto" [(ngModel)]="newInvoiceDetailEditor.productName"
+      <label for="title">Cantidad Producto</label>
+      <input type="number" class="form-control" id="productAmounttxt" placeholder="ingrese cantidad del producto" [(ngModel)]="newInvoiceDetailEditor.amount"
              [ngClass]="{ 'is-invalid': newInvoiceDetailEditor.error }" />
       <div *ngIf="newInvoiceDetailEditor.error" class="invalid-feedback">
         {{ newInvoiceDetailEditor.error }}
       </div>
     </div>
-    <div class="form-group">
-      <label for="title">Cantidad Producto</label>
-      <input type="text" class="form-control" id="NombreLocal" placeholder="ingrese cantidad del producto" [(ngModel)]="newInvoiceDetailEditor.productAmount"
-             [ngClass]="{ 'is-invalid': newInvoiceDetailEditor.error }"/>
-      <div *ngIf="newInvoiceDetailEditor.error" class="invalid-feedback">
-        {{ newInvoiceDetailEditor.error }}
-      </div>
+    <div class="text-right">
+      <button class="btn btn-primary" (click)="addInvoiceDetail()">Agregar</button>
     </div>
   </div>
   <div class="modal-footer">
     <div class="text-right">
       <button class="btn btn-default" (click)="newInvoiceDetailCancelled()">Cancelar</button>
-      <button class="btn btn-primary" (click)="validateInvoiceDetail()">Agregar</button>
+      <button class="btn btn-primary" (click)="addInvoice()">Finalizar</button>
     </div>
   </div>
 </ng-template>

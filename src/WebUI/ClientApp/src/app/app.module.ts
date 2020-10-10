@@ -14,6 +14,7 @@ import { TodoComponent } from './todo/todo.component';
 import { ApiAuthorizationModule } from 'src/api-authorization/api-authorization.module';
 import { AuthorizeGuard } from 'src/api-authorization/authorize.guard';
 import { AuthorizeInterceptor } from 'src/api-authorization/authorize.interceptor';
+import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { ProductsAdminComponent } from './products-admin/products-admin.component';
@@ -34,6 +35,7 @@ import { InvoicesComponent } from './invoices/invoices.component';
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
+    BsDatepickerModule.forRoot(),
     FontAwesomeModule,
     HttpClientModule,
     FormsModule,

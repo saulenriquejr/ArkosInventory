@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <Folder Include="Common\Mappings\" />
+    <Folder Include="Invoices\Queries\" />
   </ItemGroup>
 
 </Project>
