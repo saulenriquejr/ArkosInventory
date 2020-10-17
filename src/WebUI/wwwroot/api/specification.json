@@ -75,6 +75,29 @@
             "JWT": []
           }
         ]
+      },
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "operationId": "Invoices_Get",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoicesVm"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
       }
     },
     "/api/Places": {
@@ -836,16 +859,20 @@
             "type": "integer",
             "format": "int32"
           },
+          "providerId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "invoiceDetails": {
             "type": "array",
             "nullable": true,
             "items": {
-              "$ref": "#/components/schemas/CreateInvoiceDetailDto"
+              "$ref": "#/components/schemas/InvoiceDetailDto"
             }
           }
         }
       },
-      "CreateInvoiceDetailDto": {
+      "InvoiceDetailDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -858,6 +885,348 @@
             "format": "int32"
           }
         }
+      },
+      "InvoicesVm": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "invoices": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/InvoiceDto"
+            }
+          }
+        }
+      },
+      "InvoiceDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dateInvoice": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "place": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Place"
+              }
+            ]
+          },
+          "provider": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Provider"
+              }
+            ]
+          },
+          "invoiceDetails": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/InvoiceDetailDto"
+            }
+          }
+        }
+      },
+      "Place": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AuditableEntity"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "name": {
+                "type": "string",
+                "nullable": true
+              },
+              "invoices": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "$ref": "#/components/schemas/Invoice"
+                }
+              },
+              "inventory": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "$ref": "#/components/schemas/Inventory"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Invoice": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AuditableEntity"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "dateInvoice": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "placeId": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "place": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Place"
+                  }
+                ]
+              },
+              "providerId": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "provider": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Provider"
+                  }
+                ]
+              },
+              "invoiceDetails": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "$ref": "#/components/schemas/InvoiceDetail"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Provider": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AuditableEntity"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "name": {
+                "type": "string",
+                "nullable": true
+              },
+              "invoices": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "$ref": "#/components/schemas/Invoice"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "AuditableEntity": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "createdBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastModifiedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "InvoiceDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "product": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Product"
+              }
+            ]
+          },
+          "invoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "invoice": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Invoice"
+              }
+            ]
+          }
+        }
+      },
+      "Product": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AuditableEntity"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "name": {
+                "type": "string",
+                "nullable": true
+              },
+              "deleted": {
+                "type": "boolean"
+              },
+              "invoiceDetails": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "$ref": "#/components/schemas/InvoiceDetail"
+                }
+              },
+              "inventoryDetails": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "$ref": "#/components/schemas/InventoryDetail"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "InventoryDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "product": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Product"
+              }
+            ]
+          },
+          "manualCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "currentPrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "totalSale": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "Inventory": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AuditableEntity"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "inventoryDate": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "isDraft": {
+                "type": "boolean"
+              },
+              "placeId": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "place": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Place"
+                  }
+                ]
+              },
+              "inventoryDetails": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "$ref": "#/components/schemas/InventoryDetail"
+                }
+              }
+            }
+          }
+        ]
       },
       "PlacesVm": {
         "type": "object",

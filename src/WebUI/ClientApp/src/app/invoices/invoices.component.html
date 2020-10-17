@@ -1,28 +1,118 @@
 <h1>Facturas</h1>
 
-<div class="row col-sm-4">
-  <div class="clearfix">
-    <h2 class="float-left">Agregar factura</h2>
-  </div>
-  <div class="form-group container" id="dateInvoicetxt">
-    <label>Fecha de Factura:</label>
-    <input class="form-control" bsDatepicker placeholder="ingrese fecha de factura" [(ngModel)]="newInvoiceEditor.dateInvoice">
-  </div>
+<div *ngIf="vm">
+  <div class="row">
+    <div class="row col-sm-4">
+      <div class="clearfix">
+        <h2 class="float-left">Agregar factura</h2>
+        <button class="btn btn-default float-right" title="Add List..."
+                (click)="showNewInvoiceModal(newInvoiceModalTemplate)">
+          <fa-icon [icon]="faPlus"></fa-icon>
+        </button>
+      </div>
+      <div class="clearfix">
+        <div class="float-left">
+          <div class="table-responsive">
+            <table class="table table-hover" style="margin: 0 auto;">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Local</th>
+                  <th>Proveedor</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let invoice of vm.invoices; index as i"
+                    [ngClass]="{'active' : invoice == selectedInvoice}" (click)="selectedInvoice = invoice">
+                  <td>{{ invoice.dateInvoice | date : 'dd/MM/yyyy' }}</td>
+                  <td>{{ invoice.place.name }}</td>
+                  <td>{{ invoice.provider.name }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <div class="form-group container" id="placeNametxt">
-    <label>Nombre del Local:</label>
-    <select class="form-control" [(ngModel)]="newInvoiceEditor.place">
-      <option value="" disabled selected>seleccione un local</option>
-      <option *ngFor="let place of placeList" [ngValue]="place">{{place.name}}</option>
-    </select>
-  </div>
-  <div class="modal-footer">
-    <div class="text-right">
-      <button class="btn btn-default" (click)="newInvoiceReset()">Limpiar</button>
-      <button class="btn btn-primary" (click)="showNewInvoiceModal(newInvoiceDetailModalTemplate)">Agregar</button>
+    <div class="col-sm-8" *ngIf="selectedInvoice">
+      <div class="clearfix">
+        <h2 class="float-left">
+          {{ (selectedInvoice.dateInvoice | date : 'dd/MM/yyyy') + ' - ' + selectedInvoice.place.name + ' - ' + selectedInvoice.provider.name}}
+        </h2>
+        <button id="listOptions" class="btn btn-default float-right" title="List Options..."
+                (click)="showInvoiceOptionsModal(InvoiceOptionsModalTemplate)">
+          <fa-icon [icon]="faEllipsisH"></fa-icon>
+        </button>
+      </div>
+      <!--<ul id="invoice-details" class="list-group mb-2">
+        <li class="list-group-item" *ngFor="let details of selectedInvoice.invoiceDetails; index as i">
+          <div class="d-flex">
+            <div class="flex-fill">
+              <input id="{{ 'itemTitle' + i }}" *ngIf="item == selectedItem" type="text"
+                     class="form-control item-input-control" [(ngModel)]="item.title" (keyup.enter)="updateItem(item, true)"
+                     (blur)="updateItem(item)" autofocus="autofocus" />
+              <div class="todo-item-title" *ngIf="item != selectedItem" [ngClass]="{ 'done-todo': item.done }"
+                   (click)="editItem(item, 'itemTitle' + i)" class="form-control item-input-control">
+                <span>{{ item.title }}</span>
+              </div>
+            </div>
+            <div class="todo-item-commands">
+              <button *ngIf="item.id != 0" (click)="showItemDetailsModal(itemDetailsModalTemplate, item)"
+                      class="btn btn-default btn-xs" role="button">
+                <fa-icon [icon]="faEllipsisH"></fa-icon>
+              </button>
+            </div>
+          </div>
+        </li>
+        <li class="list-group-item" (click)="addItem()">
+          <button class="btn btn-default">Add Product...</button>
+        </li>
+      </ul>-->
     </div>
   </div>
 </div>
+
+
+<ng-template #newInvoiceModalTemplate>
+  <div class="modal-header clearfix">
+    <h4 class="modal-title float-left">Agregar Producto</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="newInvoiceCancelled()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group container" id="dateInvoicetxt">
+      <label>Fecha de Factura:</label>
+      <input class="form-control" bsDatepicker placeholder="ingrese fecha de factura" [(ngModel)]="newInvoiceEditor.dateInvoice">
+    </div>
+
+    <div class="form-group container" id="placeNametxt">
+      <label>Nombre del Local:</label>
+      <select class="form-control" [(ngModel)]="newInvoiceEditor.place">
+        <option value="" disabled selected>seleccione un local</option>
+        <option *ngFor="let place of placeList" [ngValue]="place">{{place.name}}</option>
+      </select>
+    </div>
+    <div class="form-group container" id="providerNametxt">
+      <label>Nombre del Proveedor:</label>
+      <select class="form-control" [(ngModel)]="newInvoiceEditor.provider">
+        <option value="" disabled selected>seleccione un proveedor</option>
+        <option *ngFor="let provider of providerList" [ngValue]="provider">{{provider.name}}</option>
+      </select>
+    </div>
+
+  </div>
+  <div class="modal-footer">
+    <div class="text-right">
+      <button class="btn btn-default" (click)="newInvoiceCancelled()">Cancelar</button>
+      <button class="btn btn-primary" (click)="addInvoice()">Finalizar</button>
+    </div>
+  </div>
+</ng-template>
+
+
 
 
 <ng-template #newInvoiceDetailModalTemplate>
@@ -58,5 +148,45 @@
       <button class="btn btn-default" (click)="newInvoiceDetailCancelled()">Cancelar</button>
       <button class="btn btn-primary" (click)="addInvoice()">Finalizar</button>
     </div>
+  </div>
+</ng-template>
+
+<ng-template #InvoiceOptionsModalTemplate>
+  <div class="modal-header clearfix">
+    <h4 class="modal-title float-left">Editar Factura</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="invoiceOptionsModalRef.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group container" id="dateInvoicetxt">
+      <label>Fecha de Factura:</label>
+      <input class="form-control" bsDatepicker placeholder="ingrese fecha de factura" [(ngModel)]="invoiceOptionsEditor.dateInvoice">
+    </div>
+    <div class="form-group container" id="placeNametxt">
+      <label>Nombre del Local:</label>
+      <select class="form-control" [(ngModel)]="invoiceOptionsEditor.place.name">
+        <option value="" disabled selected>seleccione un local</option>
+        <option *ngFor="let place of placeList">{{place.name}}</option>
+      </select>
+    </div>
+    <div class="form-group container" id="providerNametxt">
+      <label>Nombre del Proveedor:</label>
+      <select class="form-control" [(ngModel)]="invoiceOptionsEditor.provider.name">
+        <option value="" disabled selected>seleccione un proveedor</option>
+        <option *ngFor="let provider of providerList">{{provider.name}}</option>
+      </select>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <!--<div class="clearfix">
+      <div class="float-left">
+        <button class="btn btn-default text-danger" (click)="confirmDeleteList(deleteListModalTemplate)">Delete</button>
+      </div>
+      <div class="float-right">
+        <button class="btn btn-default" (click)="listOptionsModalRef.hide()">Cancel</button>
+        <button class="btn btn-primary" (click)="updateListOptions()">Update</button>
+      </div>
+    </div>-->
   </div>
 </ng-template>

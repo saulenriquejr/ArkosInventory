@@ -1,5 +1,6 @@
 ﻿using Arkos.Application.Common.Exceptions;
 using Arkos.Application.Common.Interfaces;
+using Arkos.Application.Invoices.Queries;
 using Arkos.Domain.Entities;
 using MediatR;
 using System;
@@ -14,7 +15,8 @@ namespace Arkos.Application.Invoices.Command
     {
         public DateTime DateInvoice { get; set; }
         public int PlaceId { get; set; }
-        public ICollection<CreateInvoiceDetailDto> InvoiceDetails { get; set; }
+        public int ProviderId { get; set; }
+        public ICollection<InvoiceDetailDto> InvoiceDetails { get; set; }
     }
 
     public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand, int>
@@ -34,19 +36,20 @@ namespace Arkos.Application.Invoices.Command
             var entity = new Invoice()
             {
                 DateInvoice = request.DateInvoice,
-                PlaceId = request.PlaceId
+                PlaceId = request.PlaceId,
+                ProviderId = request.ProviderId
             };
 
-            foreach (var invoiceDetail in request.InvoiceDetails)
-            {
-                var invoiceDetailEntity = new InvoiceDetail()
-                {
-                    Amount = invoiceDetail.Amount,
-                    ProductId = invoiceDetail.ProductId
-                };
+            //foreach (var invoiceDetail in request.InvoiceDetails)
+            //{
+            //    var invoiceDetailEntity = new InvoiceDetail()
+            //    {
+            //        Amount = invoiceDetail.Amount,
+            //        ProductId = invoiceDetail.ProductId
+            //    };
 
-                entity.InvoiceDetails.Add(invoiceDetailEntity);
-            }
+            //    entity.InvoiceDetails.Add(invoiceDetailEntity);
+            //}
 
             _context.Invoices.Add(entity);
 
