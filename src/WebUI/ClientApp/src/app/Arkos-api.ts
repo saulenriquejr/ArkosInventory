@@ -84,9 +84,81 @@ export class InventoryClient implements IInventoryClient {
     }
 }
 
+export interface IInvoiceDetailsClient {
+    create(command: CreateInvoiceDetailCommand): Observable<number>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class InvoiceDetailsClient implements IInvoiceDetailsClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ? baseUrl : "";
+    }
+
+    create(command: CreateInvoiceDetailCommand): Observable<number> {
+        let url_ = this.baseUrl + "/api/InvoiceDetails";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",			
+            headers: new HttpHeaders({
+                "Content-Type": "application/json", 
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreate(<any>response_);
+                } catch (e) {
+                    return <Observable<number>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<number>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processCreate(response: HttpResponseBase): Observable<number> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<number>(<any>null);
+    }
+}
+
 export interface IInvoicesClient {
     create(command: CreateInvoiceCommand): Observable<number>;
     get(): Observable<InvoicesVm>;
+    update(id: number, command: UpdateInvoiceCommand): Observable<FileResponse>;
+    delete(id: number): Observable<FileResponse>;
 }
 
 @Injectable({
@@ -200,6 +272,108 @@ export class InvoicesClient implements IInvoicesClient {
             }));
         }
         return _observableOf<InvoicesVm>(<any>null);
+    }
+
+    update(id: number, command: UpdateInvoiceCommand): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/Invoices/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",			
+            headers: new HttpHeaders({
+                "Content-Type": "application/json", 
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdate(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processUpdate(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
+    }
+
+    delete(id: number): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/Invoices/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",			
+            headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
     }
 }
 
@@ -1396,6 +1570,50 @@ export interface ICreateInventoryDetailDto {
     totalSale?: number;
 }
 
+export class CreateInvoiceDetailCommand implements ICreateInvoiceDetailCommand {
+    invoiceId?: number;
+    productId?: number;
+    amount?: number;
+
+    constructor(data?: ICreateInvoiceDetailCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.invoiceId = _data["invoiceId"];
+            this.productId = _data["productId"];
+            this.amount = _data["amount"];
+        }
+    }
+
+    static fromJS(data: any): CreateInvoiceDetailCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateInvoiceDetailCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["invoiceId"] = this.invoiceId;
+        data["productId"] = this.productId;
+        data["amount"] = this.amount;
+        return data; 
+    }
+}
+
+export interface ICreateInvoiceDetailCommand {
+    invoiceId?: number;
+    productId?: number;
+    amount?: number;
+}
+
 export class CreateInvoiceCommand implements ICreateInvoiceCommand {
     dateInvoice?: Date;
     placeId?: number;
@@ -1453,8 +1671,10 @@ export interface ICreateInvoiceCommand {
 }
 
 export class InvoiceDetailDto implements IInvoiceDetailDto {
+    id?: number;
+    invoiceId?: number;
     amount?: number;
-    productId?: number;
+    product?: Product | undefined;
 
     constructor(data?: IInvoiceDetailDto) {
         if (data) {
@@ -1467,8 +1687,10 @@ export class InvoiceDetailDto implements IInvoiceDetailDto {
 
     init(_data?: any) {
         if (_data) {
+            this.id = _data["id"];
+            this.invoiceId = _data["invoiceId"];
             this.amount = _data["amount"];
-            this.productId = _data["productId"];
+            this.product = _data["product"] ? Product.fromJS(_data["product"]) : <any>undefined;
         }
     }
 
@@ -1481,15 +1703,478 @@ export class InvoiceDetailDto implements IInvoiceDetailDto {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["invoiceId"] = this.invoiceId;
         data["amount"] = this.amount;
-        data["productId"] = this.productId;
+        data["product"] = this.product ? this.product.toJSON() : <any>undefined;
         return data; 
     }
 }
 
 export interface IInvoiceDetailDto {
+    id?: number;
+    invoiceId?: number;
+    amount?: number;
+    product?: Product | undefined;
+}
+
+export abstract class AuditableEntity implements IAuditableEntity {
+    createdBy?: string | undefined;
+    created?: Date;
+    lastModifiedBy?: string | undefined;
+    lastModified?: Date | undefined;
+
+    constructor(data?: IAuditableEntity) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.createdBy = _data["createdBy"];
+            this.created = _data["created"] ? new Date(_data["created"].toString()) : <any>undefined;
+            this.lastModifiedBy = _data["lastModifiedBy"];
+            this.lastModified = _data["lastModified"] ? new Date(_data["lastModified"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): AuditableEntity {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'AuditableEntity' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["createdBy"] = this.createdBy;
+        data["created"] = this.created ? this.created.toISOString() : <any>undefined;
+        data["lastModifiedBy"] = this.lastModifiedBy;
+        data["lastModified"] = this.lastModified ? this.lastModified.toISOString() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IAuditableEntity {
+    createdBy?: string | undefined;
+    created?: Date;
+    lastModifiedBy?: string | undefined;
+    lastModified?: Date | undefined;
+}
+
+export class Product extends AuditableEntity implements IProduct {
+    id?: number;
+    name?: string | undefined;
+    deleted?: boolean;
+    invoiceDetails?: InvoiceDetail[] | undefined;
+    inventoryDetails?: InventoryDetail[] | undefined;
+
+    constructor(data?: IProduct) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.deleted = _data["deleted"];
+            if (Array.isArray(_data["invoiceDetails"])) {
+                this.invoiceDetails = [] as any;
+                for (let item of _data["invoiceDetails"])
+                    this.invoiceDetails!.push(InvoiceDetail.fromJS(item));
+            }
+            if (Array.isArray(_data["inventoryDetails"])) {
+                this.inventoryDetails = [] as any;
+                for (let item of _data["inventoryDetails"])
+                    this.inventoryDetails!.push(InventoryDetail.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): Product {
+        data = typeof data === 'object' ? data : {};
+        let result = new Product();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["deleted"] = this.deleted;
+        if (Array.isArray(this.invoiceDetails)) {
+            data["invoiceDetails"] = [];
+            for (let item of this.invoiceDetails)
+                data["invoiceDetails"].push(item.toJSON());
+        }
+        if (Array.isArray(this.inventoryDetails)) {
+            data["inventoryDetails"] = [];
+            for (let item of this.inventoryDetails)
+                data["inventoryDetails"].push(item.toJSON());
+        }
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IProduct extends IAuditableEntity {
+    id?: number;
+    name?: string | undefined;
+    deleted?: boolean;
+    invoiceDetails?: InvoiceDetail[] | undefined;
+    inventoryDetails?: InventoryDetail[] | undefined;
+}
+
+export class InvoiceDetail implements IInvoiceDetail {
+    id?: number;
     amount?: number;
     productId?: number;
+    product?: Product | undefined;
+    invoiceId?: number;
+    invoice?: Invoice | undefined;
+
+    constructor(data?: IInvoiceDetail) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.amount = _data["amount"];
+            this.productId = _data["productId"];
+            this.product = _data["product"] ? Product.fromJS(_data["product"]) : <any>undefined;
+            this.invoiceId = _data["invoiceId"];
+            this.invoice = _data["invoice"] ? Invoice.fromJS(_data["invoice"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): InvoiceDetail {
+        data = typeof data === 'object' ? data : {};
+        let result = new InvoiceDetail();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["amount"] = this.amount;
+        data["productId"] = this.productId;
+        data["product"] = this.product ? this.product.toJSON() : <any>undefined;
+        data["invoiceId"] = this.invoiceId;
+        data["invoice"] = this.invoice ? this.invoice.toJSON() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IInvoiceDetail {
+    id?: number;
+    amount?: number;
+    productId?: number;
+    product?: Product | undefined;
+    invoiceId?: number;
+    invoice?: Invoice | undefined;
+}
+
+export class Invoice extends AuditableEntity implements IInvoice {
+    id?: number;
+    dateInvoice?: Date;
+    placeId?: number;
+    place?: Place | undefined;
+    providerId?: number;
+    provider?: Provider | undefined;
+    invoiceDetails?: InvoiceDetail[] | undefined;
+
+    constructor(data?: IInvoice) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.id = _data["id"];
+            this.dateInvoice = _data["dateInvoice"] ? new Date(_data["dateInvoice"].toString()) : <any>undefined;
+            this.placeId = _data["placeId"];
+            this.place = _data["place"] ? Place.fromJS(_data["place"]) : <any>undefined;
+            this.providerId = _data["providerId"];
+            this.provider = _data["provider"] ? Provider.fromJS(_data["provider"]) : <any>undefined;
+            if (Array.isArray(_data["invoiceDetails"])) {
+                this.invoiceDetails = [] as any;
+                for (let item of _data["invoiceDetails"])
+                    this.invoiceDetails!.push(InvoiceDetail.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): Invoice {
+        data = typeof data === 'object' ? data : {};
+        let result = new Invoice();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["dateInvoice"] = this.dateInvoice ? this.dateInvoice.toISOString() : <any>undefined;
+        data["placeId"] = this.placeId;
+        data["place"] = this.place ? this.place.toJSON() : <any>undefined;
+        data["providerId"] = this.providerId;
+        data["provider"] = this.provider ? this.provider.toJSON() : <any>undefined;
+        if (Array.isArray(this.invoiceDetails)) {
+            data["invoiceDetails"] = [];
+            for (let item of this.invoiceDetails)
+                data["invoiceDetails"].push(item.toJSON());
+        }
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IInvoice extends IAuditableEntity {
+    id?: number;
+    dateInvoice?: Date;
+    placeId?: number;
+    place?: Place | undefined;
+    providerId?: number;
+    provider?: Provider | undefined;
+    invoiceDetails?: InvoiceDetail[] | undefined;
+}
+
+export class Place extends AuditableEntity implements IPlace {
+    id?: number;
+    name?: string | undefined;
+    invoices?: Invoice[] | undefined;
+    inventory?: Inventory[] | undefined;
+
+    constructor(data?: IPlace) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+            if (Array.isArray(_data["invoices"])) {
+                this.invoices = [] as any;
+                for (let item of _data["invoices"])
+                    this.invoices!.push(Invoice.fromJS(item));
+            }
+            if (Array.isArray(_data["inventory"])) {
+                this.inventory = [] as any;
+                for (let item of _data["inventory"])
+                    this.inventory!.push(Inventory.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): Place {
+        data = typeof data === 'object' ? data : {};
+        let result = new Place();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["name"] = this.name;
+        if (Array.isArray(this.invoices)) {
+            data["invoices"] = [];
+            for (let item of this.invoices)
+                data["invoices"].push(item.toJSON());
+        }
+        if (Array.isArray(this.inventory)) {
+            data["inventory"] = [];
+            for (let item of this.inventory)
+                data["inventory"].push(item.toJSON());
+        }
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IPlace extends IAuditableEntity {
+    id?: number;
+    name?: string | undefined;
+    invoices?: Invoice[] | undefined;
+    inventory?: Inventory[] | undefined;
+}
+
+export class Inventory extends AuditableEntity implements IInventory {
+    id?: number;
+    inventoryDate?: Date;
+    isDraft?: boolean;
+    placeId?: number;
+    place?: Place | undefined;
+    inventoryDetails?: InventoryDetail[] | undefined;
+
+    constructor(data?: IInventory) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.id = _data["id"];
+            this.inventoryDate = _data["inventoryDate"] ? new Date(_data["inventoryDate"].toString()) : <any>undefined;
+            this.isDraft = _data["isDraft"];
+            this.placeId = _data["placeId"];
+            this.place = _data["place"] ? Place.fromJS(_data["place"]) : <any>undefined;
+            if (Array.isArray(_data["inventoryDetails"])) {
+                this.inventoryDetails = [] as any;
+                for (let item of _data["inventoryDetails"])
+                    this.inventoryDetails!.push(InventoryDetail.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): Inventory {
+        data = typeof data === 'object' ? data : {};
+        let result = new Inventory();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["inventoryDate"] = this.inventoryDate ? this.inventoryDate.toISOString() : <any>undefined;
+        data["isDraft"] = this.isDraft;
+        data["placeId"] = this.placeId;
+        data["place"] = this.place ? this.place.toJSON() : <any>undefined;
+        if (Array.isArray(this.inventoryDetails)) {
+            data["inventoryDetails"] = [];
+            for (let item of this.inventoryDetails)
+                data["inventoryDetails"].push(item.toJSON());
+        }
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IInventory extends IAuditableEntity {
+    id?: number;
+    inventoryDate?: Date;
+    isDraft?: boolean;
+    placeId?: number;
+    place?: Place | undefined;
+    inventoryDetails?: InventoryDetail[] | undefined;
+}
+
+export class InventoryDetail implements IInventoryDetail {
+    id?: number;
+    productId?: number;
+    product?: Product | undefined;
+    manualCount?: number;
+    currentPrice?: number;
+    totalSale?: number;
+
+    constructor(data?: IInventoryDetail) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.productId = _data["productId"];
+            this.product = _data["product"] ? Product.fromJS(_data["product"]) : <any>undefined;
+            this.manualCount = _data["manualCount"];
+            this.currentPrice = _data["currentPrice"];
+            this.totalSale = _data["totalSale"];
+        }
+    }
+
+    static fromJS(data: any): InventoryDetail {
+        data = typeof data === 'object' ? data : {};
+        let result = new InventoryDetail();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["productId"] = this.productId;
+        data["product"] = this.product ? this.product.toJSON() : <any>undefined;
+        data["manualCount"] = this.manualCount;
+        data["currentPrice"] = this.currentPrice;
+        data["totalSale"] = this.totalSale;
+        return data; 
+    }
+}
+
+export interface IInventoryDetail {
+    id?: number;
+    productId?: number;
+    product?: Product | undefined;
+    manualCount?: number;
+    currentPrice?: number;
+    totalSale?: number;
+}
+
+export class Provider extends AuditableEntity implements IProvider {
+    id?: number;
+    name?: string | undefined;
+    invoices?: Invoice[] | undefined;
+
+    constructor(data?: IProvider) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+            if (Array.isArray(_data["invoices"])) {
+                this.invoices = [] as any;
+                for (let item of _data["invoices"])
+                    this.invoices!.push(Invoice.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): Provider {
+        data = typeof data === 'object' ? data : {};
+        let result = new Provider();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["name"] = this.name;
+        if (Array.isArray(this.invoices)) {
+            data["invoices"] = [];
+            for (let item of this.invoices)
+                data["invoices"].push(item.toJSON());
+        }
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IProvider extends IAuditableEntity {
+    id?: number;
+    name?: string | undefined;
+    invoices?: Invoice[] | undefined;
 }
 
 export class InvoicesVm implements IInvoicesVm {
@@ -1596,13 +2281,13 @@ export interface IInvoiceDto {
     invoiceDetails?: InvoiceDetailDto[] | undefined;
 }
 
-export abstract class AuditableEntity implements IAuditableEntity {
-    createdBy?: string | undefined;
-    created?: Date;
-    lastModifiedBy?: string | undefined;
-    lastModified?: Date | undefined;
+export class UpdateInvoiceCommand implements IUpdateInvoiceCommand {
+    id?: number;
+    dateInvoice?: Date;
+    placeId?: number;
+    providerId?: number;
 
-    constructor(data?: IAuditableEntity) {
+    constructor(data?: IUpdateInvoiceCommand) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1613,129 +2298,16 @@ export abstract class AuditableEntity implements IAuditableEntity {
 
     init(_data?: any) {
         if (_data) {
-            this.createdBy = _data["createdBy"];
-            this.created = _data["created"] ? new Date(_data["created"].toString()) : <any>undefined;
-            this.lastModifiedBy = _data["lastModifiedBy"];
-            this.lastModified = _data["lastModified"] ? new Date(_data["lastModified"].toString()) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): AuditableEntity {
-        data = typeof data === 'object' ? data : {};
-        throw new Error("The abstract class 'AuditableEntity' cannot be instantiated.");
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["createdBy"] = this.createdBy;
-        data["created"] = this.created ? this.created.toISOString() : <any>undefined;
-        data["lastModifiedBy"] = this.lastModifiedBy;
-        data["lastModified"] = this.lastModified ? this.lastModified.toISOString() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IAuditableEntity {
-    createdBy?: string | undefined;
-    created?: Date;
-    lastModifiedBy?: string | undefined;
-    lastModified?: Date | undefined;
-}
-
-export class Place extends AuditableEntity implements IPlace {
-    id?: number;
-    name?: string | undefined;
-    invoices?: Invoice[] | undefined;
-    inventory?: Inventory[] | undefined;
-
-    constructor(data?: IPlace) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.id = _data["id"];
-            this.name = _data["name"];
-            if (Array.isArray(_data["invoices"])) {
-                this.invoices = [] as any;
-                for (let item of _data["invoices"])
-                    this.invoices!.push(Invoice.fromJS(item));
-            }
-            if (Array.isArray(_data["inventory"])) {
-                this.inventory = [] as any;
-                for (let item of _data["inventory"])
-                    this.inventory!.push(Inventory.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): Place {
-        data = typeof data === 'object' ? data : {};
-        let result = new Place();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["name"] = this.name;
-        if (Array.isArray(this.invoices)) {
-            data["invoices"] = [];
-            for (let item of this.invoices)
-                data["invoices"].push(item.toJSON());
-        }
-        if (Array.isArray(this.inventory)) {
-            data["inventory"] = [];
-            for (let item of this.inventory)
-                data["inventory"].push(item.toJSON());
-        }
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IPlace extends IAuditableEntity {
-    id?: number;
-    name?: string | undefined;
-    invoices?: Invoice[] | undefined;
-    inventory?: Inventory[] | undefined;
-}
-
-export class Invoice extends AuditableEntity implements IInvoice {
-    id?: number;
-    dateInvoice?: Date;
-    placeId?: number;
-    place?: Place | undefined;
-    providerId?: number;
-    provider?: Provider | undefined;
-    invoiceDetails?: InvoiceDetail[] | undefined;
-
-    constructor(data?: IInvoice) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
             this.id = _data["id"];
             this.dateInvoice = _data["dateInvoice"] ? new Date(_data["dateInvoice"].toString()) : <any>undefined;
             this.placeId = _data["placeId"];
-            this.place = _data["place"] ? Place.fromJS(_data["place"]) : <any>undefined;
             this.providerId = _data["providerId"];
-            this.provider = _data["provider"] ? Provider.fromJS(_data["provider"]) : <any>undefined;
-            if (Array.isArray(_data["invoiceDetails"])) {
-                this.invoiceDetails = [] as any;
-                for (let item of _data["invoiceDetails"])
-                    this.invoiceDetails!.push(InvoiceDetail.fromJS(item));
-            }
         }
     }
 
-    static fromJS(data: any): Invoice {
+    static fromJS(data: any): UpdateInvoiceCommand {
         data = typeof data === 'object' ? data : {};
-        let result = new Invoice();
+        let result = new UpdateInvoiceCommand();
         result.init(data);
         return result;
     }
@@ -1745,314 +2317,16 @@ export class Invoice extends AuditableEntity implements IInvoice {
         data["id"] = this.id;
         data["dateInvoice"] = this.dateInvoice ? this.dateInvoice.toISOString() : <any>undefined;
         data["placeId"] = this.placeId;
-        data["place"] = this.place ? this.place.toJSON() : <any>undefined;
         data["providerId"] = this.providerId;
-        data["provider"] = this.provider ? this.provider.toJSON() : <any>undefined;
-        if (Array.isArray(this.invoiceDetails)) {
-            data["invoiceDetails"] = [];
-            for (let item of this.invoiceDetails)
-                data["invoiceDetails"].push(item.toJSON());
-        }
-        super.toJSON(data);
         return data; 
     }
 }
 
-export interface IInvoice extends IAuditableEntity {
+export interface IUpdateInvoiceCommand {
     id?: number;
     dateInvoice?: Date;
     placeId?: number;
-    place?: Place | undefined;
     providerId?: number;
-    provider?: Provider | undefined;
-    invoiceDetails?: InvoiceDetail[] | undefined;
-}
-
-export class Provider extends AuditableEntity implements IProvider {
-    id?: number;
-    name?: string | undefined;
-    invoices?: Invoice[] | undefined;
-
-    constructor(data?: IProvider) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.id = _data["id"];
-            this.name = _data["name"];
-            if (Array.isArray(_data["invoices"])) {
-                this.invoices = [] as any;
-                for (let item of _data["invoices"])
-                    this.invoices!.push(Invoice.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): Provider {
-        data = typeof data === 'object' ? data : {};
-        let result = new Provider();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["name"] = this.name;
-        if (Array.isArray(this.invoices)) {
-            data["invoices"] = [];
-            for (let item of this.invoices)
-                data["invoices"].push(item.toJSON());
-        }
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IProvider extends IAuditableEntity {
-    id?: number;
-    name?: string | undefined;
-    invoices?: Invoice[] | undefined;
-}
-
-export class InvoiceDetail implements IInvoiceDetail {
-    id?: number;
-    amount?: number;
-    productId?: number;
-    product?: Product | undefined;
-    invoiceId?: number;
-    invoice?: Invoice | undefined;
-
-    constructor(data?: IInvoiceDetail) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"];
-            this.amount = _data["amount"];
-            this.productId = _data["productId"];
-            this.product = _data["product"] ? Product.fromJS(_data["product"]) : <any>undefined;
-            this.invoiceId = _data["invoiceId"];
-            this.invoice = _data["invoice"] ? Invoice.fromJS(_data["invoice"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): InvoiceDetail {
-        data = typeof data === 'object' ? data : {};
-        let result = new InvoiceDetail();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["amount"] = this.amount;
-        data["productId"] = this.productId;
-        data["product"] = this.product ? this.product.toJSON() : <any>undefined;
-        data["invoiceId"] = this.invoiceId;
-        data["invoice"] = this.invoice ? this.invoice.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IInvoiceDetail {
-    id?: number;
-    amount?: number;
-    productId?: number;
-    product?: Product | undefined;
-    invoiceId?: number;
-    invoice?: Invoice | undefined;
-}
-
-export class Product extends AuditableEntity implements IProduct {
-    id?: number;
-    name?: string | undefined;
-    deleted?: boolean;
-    invoiceDetails?: InvoiceDetail[] | undefined;
-    inventoryDetails?: InventoryDetail[] | undefined;
-
-    constructor(data?: IProduct) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.id = _data["id"];
-            this.name = _data["name"];
-            this.deleted = _data["deleted"];
-            if (Array.isArray(_data["invoiceDetails"])) {
-                this.invoiceDetails = [] as any;
-                for (let item of _data["invoiceDetails"])
-                    this.invoiceDetails!.push(InvoiceDetail.fromJS(item));
-            }
-            if (Array.isArray(_data["inventoryDetails"])) {
-                this.inventoryDetails = [] as any;
-                for (let item of _data["inventoryDetails"])
-                    this.inventoryDetails!.push(InventoryDetail.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): Product {
-        data = typeof data === 'object' ? data : {};
-        let result = new Product();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["name"] = this.name;
-        data["deleted"] = this.deleted;
-        if (Array.isArray(this.invoiceDetails)) {
-            data["invoiceDetails"] = [];
-            for (let item of this.invoiceDetails)
-                data["invoiceDetails"].push(item.toJSON());
-        }
-        if (Array.isArray(this.inventoryDetails)) {
-            data["inventoryDetails"] = [];
-            for (let item of this.inventoryDetails)
-                data["inventoryDetails"].push(item.toJSON());
-        }
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IProduct extends IAuditableEntity {
-    id?: number;
-    name?: string | undefined;
-    deleted?: boolean;
-    invoiceDetails?: InvoiceDetail[] | undefined;
-    inventoryDetails?: InventoryDetail[] | undefined;
-}
-
-export class InventoryDetail implements IInventoryDetail {
-    id?: number;
-    productId?: number;
-    product?: Product | undefined;
-    manualCount?: number;
-    currentPrice?: number;
-    totalSale?: number;
-
-    constructor(data?: IInventoryDetail) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"];
-            this.productId = _data["productId"];
-            this.product = _data["product"] ? Product.fromJS(_data["product"]) : <any>undefined;
-            this.manualCount = _data["manualCount"];
-            this.currentPrice = _data["currentPrice"];
-            this.totalSale = _data["totalSale"];
-        }
-    }
-
-    static fromJS(data: any): InventoryDetail {
-        data = typeof data === 'object' ? data : {};
-        let result = new InventoryDetail();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["productId"] = this.productId;
-        data["product"] = this.product ? this.product.toJSON() : <any>undefined;
-        data["manualCount"] = this.manualCount;
-        data["currentPrice"] = this.currentPrice;
-        data["totalSale"] = this.totalSale;
-        return data; 
-    }
-}
-
-export interface IInventoryDetail {
-    id?: number;
-    productId?: number;
-    product?: Product | undefined;
-    manualCount?: number;
-    currentPrice?: number;
-    totalSale?: number;
-}
-
-export class Inventory extends AuditableEntity implements IInventory {
-    id?: number;
-    inventoryDate?: Date;
-    isDraft?: boolean;
-    placeId?: number;
-    place?: Place | undefined;
-    inventoryDetails?: InventoryDetail[] | undefined;
-
-    constructor(data?: IInventory) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.id = _data["id"];
-            this.inventoryDate = _data["inventoryDate"] ? new Date(_data["inventoryDate"].toString()) : <any>undefined;
-            this.isDraft = _data["isDraft"];
-            this.placeId = _data["placeId"];
-            this.place = _data["place"] ? Place.fromJS(_data["place"]) : <any>undefined;
-            if (Array.isArray(_data["inventoryDetails"])) {
-                this.inventoryDetails = [] as any;
-                for (let item of _data["inventoryDetails"])
-                    this.inventoryDetails!.push(InventoryDetail.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): Inventory {
-        data = typeof data === 'object' ? data : {};
-        let result = new Inventory();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["inventoryDate"] = this.inventoryDate ? this.inventoryDate.toISOString() : <any>undefined;
-        data["isDraft"] = this.isDraft;
-        data["placeId"] = this.placeId;
-        data["place"] = this.place ? this.place.toJSON() : <any>undefined;
-        if (Array.isArray(this.inventoryDetails)) {
-            data["inventoryDetails"] = [];
-            for (let item of this.inventoryDetails)
-                data["inventoryDetails"].push(item.toJSON());
-        }
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IInventory extends IAuditableEntity {
-    id?: number;
-    inventoryDate?: Date;
-    isDraft?: boolean;
-    placeId?: number;
-    place?: Place | undefined;
-    inventoryDetails?: InventoryDetail[] | undefined;
 }
 
 export class PlacesVm implements IPlacesVm {

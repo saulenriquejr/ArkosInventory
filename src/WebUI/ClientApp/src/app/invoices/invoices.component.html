@@ -41,35 +41,35 @@
         <h2 class="float-left">
           {{ (selectedInvoice.dateInvoice | date : 'dd/MM/yyyy') + ' - ' + selectedInvoice.place.name + ' - ' + selectedInvoice.provider.name}}
         </h2>
-        <button id="listOptions" class="btn btn-default float-right" title="List Options..."
+        <button id="InvoiceOptions" class="btn btn-default float-right" title="Invoice Options..."
                 (click)="showInvoiceOptionsModal(InvoiceOptionsModalTemplate)">
           <fa-icon [icon]="faEllipsisH"></fa-icon>
         </button>
       </div>
-      <!--<ul id="invoice-details" class="list-group mb-2">
-        <li class="list-group-item" *ngFor="let details of selectedInvoice.invoiceDetails; index as i">
+      <ul id="invoice-details" class="list-group mb-2">
+        <li *ngFor="let detail of selectedInvoice.invoiceDetails; index as i" class="list-group-item">
           <div class="d-flex">
             <div class="flex-fill">
-              <input id="{{ 'itemTitle' + i }}" *ngIf="item == selectedItem" type="text"
-                     class="form-control item-input-control" [(ngModel)]="item.title" (keyup.enter)="updateItem(item, true)"
-                     (blur)="updateItem(item)" autofocus="autofocus" />
-              <div class="todo-item-title" *ngIf="item != selectedItem" [ngClass]="{ 'done-todo': item.done }"
-                   (click)="editItem(item, 'itemTitle' + i)" class="form-control item-input-control">
-                <span>{{ item.title }}</span>
+              <div class="float-left">
+                {{ detail.product.name }}
+              </div>
+              <div class="float-left text-right">
+                <span class="badge badge-light">{{ detail.amount }}</span>
               </div>
             </div>
             <div class="todo-item-commands">
-              <button *ngIf="item.id != 0" (click)="showItemDetailsModal(itemDetailsModalTemplate, item)"
+              <button id="DetailOptions" title="Detail Options..."
+                      (click)="showDetailOptionsModal(detailOptionsModalTemplate, item)"
                       class="btn btn-default btn-xs" role="button">
                 <fa-icon [icon]="faEllipsisH"></fa-icon>
               </button>
             </div>
           </div>
         </li>
-        <li class="list-group-item" (click)="addItem()">
-          <button class="btn btn-default">Add Product...</button>
+        <li class="list-group-item" (click)="showNewInvoiceDetailModal(newInvoiceDetailModalTemplate)">
+          <button class="btn btn-default">Agregar producto...</button>
         </li>
-      </ul>-->
+      </ul>
     </div>
   </div>
 </div>
@@ -118,7 +118,7 @@
 <ng-template #newInvoiceDetailModalTemplate>
   <div class="modal-header clearfix">
     <h4 class="modal-title float-left">Agregar Producto</h4>
-    <button type="button" class="close float-right" aria-label="Close" (click)="newInvoiceDetailCancelled()">
+    <button type="button" class="close float-right" aria-label="Close" (click)="newInvoiceDetailModalRef.hide()">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
@@ -135,18 +135,12 @@
       <label for="title">Cantidad Producto</label>
       <input type="number" class="form-control" id="productAmounttxt" placeholder="ingrese cantidad del producto" [(ngModel)]="newInvoiceDetailEditor.amount"
              [ngClass]="{ 'is-invalid': newInvoiceDetailEditor.error }" />
-      <div *ngIf="newInvoiceDetailEditor.error" class="invalid-feedback">
-        {{ newInvoiceDetailEditor.error }}
-      </div>
-    </div>
-    <div class="text-right">
-      <button class="btn btn-primary" (click)="addInvoiceDetail()">Agregar</button>
     </div>
   </div>
   <div class="modal-footer">
     <div class="text-right">
-      <button class="btn btn-default" (click)="newInvoiceDetailCancelled()">Cancelar</button>
-      <button class="btn btn-primary" (click)="addInvoice()">Finalizar</button>
+      <button class="btn btn-default" (click)="newInvoiceDetailModalRef.hide()">Cancelar</button>
+      <button class="btn btn-primary" (click)="addDetail()">Agregar</button>
     </div>
   </div>
 </ng-template>
@@ -159,34 +153,52 @@
     </button>
   </div>
   <div class="modal-body">
-    <div class="form-group container" id="dateInvoicetxt">
+    <div class="form-group container" id="dateInvoiceEdittxt">
       <label>Fecha de Factura:</label>
       <input class="form-control" bsDatepicker placeholder="ingrese fecha de factura" [(ngModel)]="invoiceOptionsEditor.dateInvoice">
     </div>
-    <div class="form-group container" id="placeNametxt">
+    <div class="form-group container" id="placeNameEdittxt">
       <label>Nombre del Local:</label>
-      <select class="form-control" [(ngModel)]="invoiceOptionsEditor.place.name">
+      <select class="form-control" [(ngModel)]="invoiceOptionsEditor.placeId">
         <option value="" disabled selected>seleccione un local</option>
-        <option *ngFor="let place of placeList">{{place.name}}</option>
+        <option *ngFor="let place of placeList" [ngValue]="place.id">{{place.name}}</option>
       </select>
     </div>
     <div class="form-group container" id="providerNametxt">
       <label>Nombre del Proveedor:</label>
-      <select class="form-control" [(ngModel)]="invoiceOptionsEditor.provider.name">
+      <select class="form-control" [(ngModel)]="invoiceOptionsEditor.providerId">
         <option value="" disabled selected>seleccione un proveedor</option>
-        <option *ngFor="let provider of providerList">{{provider.name}}</option>
+        <option *ngFor="let provider of providerList" [ngValue]="provider.id">{{provider.name}}</option>
       </select>
     </div>
   </div>
   <div class="modal-footer">
-    <!--<div class="clearfix">
+    <div class="clearfix">
       <div class="float-left">
-        <button class="btn btn-default text-danger" (click)="confirmDeleteList(deleteListModalTemplate)">Delete</button>
+        <button class="btn btn-default text-danger" (click)="confirmDeleteInvoice(deleteInvoiceModalTemplate)">Eliminar</button>
       </div>
       <div class="float-right">
-        <button class="btn btn-default" (click)="listOptionsModalRef.hide()">Cancel</button>
-        <button class="btn btn-primary" (click)="updateListOptions()">Update</button>
+        <button class="btn btn-default" (click)="invoiceOptionsModalRef.hide()">Cancelar</button>
+        <button class="btn btn-primary" (click)="updateInvoiceOptions()">Actualizar</button>
       </div>
-    </div>-->
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #deleteInvoiceModalTemplate>
+  <div class="modal-header clearfix">
+    <h4 class="modal-title float-left">¿Desea Eliminar "{{ (selectedInvoice.dateInvoice | date : 'dd/MM/yyyy') + ' - ' + selectedInvoice.place.name + ' - ' + selectedInvoice.provider.name}}" ?</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="deleteInvoiceModalRef.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p>Todos los productos se eliminaran de forma permanente. </p>
+  </div>
+  <div class="modal-footer">
+    <div class="text-right">
+      <button type="button" class="btn btn-default" (click)="deleteInvoiceModalRef.hide()">Cancelar</button>
+      <button type="button" class="btn btn-danger" (click)="deleteInvoiceConfirmed()">Eliminar</button>
+    </div>
   </div>
 </ng-template>

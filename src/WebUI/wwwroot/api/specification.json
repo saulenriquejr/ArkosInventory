@@ -39,6 +39,44 @@
         }
       }
     },
+    "/api/InvoiceDetails": {
+      "post": {
+        "tags": [
+          "InvoiceDetails"
+        ],
+        "operationId": "InvoiceDetails_Create",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvoiceDetailCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/Invoices": {
       "post": {
         "tags": [
@@ -88,6 +126,92 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InvoicesVm"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Invoices/{id}": {
+      "put": {
+        "tags": [
+          "Invoices"
+        ],
+        "operationId": "Invoices_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInvoiceCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Invoices"
+        ],
+        "operationId": "Invoices_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             }
@@ -847,6 +971,24 @@
           }
         }
       },
+      "CreateInvoiceDetailCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "invoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "CreateInvoiceCommand": {
         "type": "object",
         "additionalProperties": false,
@@ -876,67 +1018,29 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "amount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "productId": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "InvoicesVm": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "invoices": {
-            "type": "array",
-            "nullable": true,
-            "items": {
-              "$ref": "#/components/schemas/InvoiceDto"
-            }
-          }
-        }
-      },
-      "InvoiceDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
           "id": {
             "type": "integer",
             "format": "int32"
           },
-          "dateInvoice": {
-            "type": "string",
-            "format": "date-time"
+          "invoiceId": {
+            "type": "integer",
+            "format": "int32"
           },
-          "place": {
+          "amount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "product": {
             "nullable": true,
             "oneOf": [
               {
-                "$ref": "#/components/schemas/Place"
+                "$ref": "#/components/schemas/Product"
               }
             ]
-          },
-          "provider": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/Provider"
-              }
-            ]
-          },
-          "invoiceDetails": {
-            "type": "array",
-            "nullable": true,
-            "items": {
-              "$ref": "#/components/schemas/InvoiceDetailDto"
-            }
           }
         }
       },
-      "Place": {
+      "Product": {
         "allOf": [
           {
             "$ref": "#/components/schemas/AuditableEntity"
@@ -953,23 +1057,64 @@
                 "type": "string",
                 "nullable": true
               },
-              "invoices": {
+              "deleted": {
+                "type": "boolean"
+              },
+              "invoiceDetails": {
                 "type": "array",
                 "nullable": true,
                 "items": {
-                  "$ref": "#/components/schemas/Invoice"
+                  "$ref": "#/components/schemas/InvoiceDetail"
                 }
               },
-              "inventory": {
+              "inventoryDetails": {
                 "type": "array",
                 "nullable": true,
                 "items": {
-                  "$ref": "#/components/schemas/Inventory"
+                  "$ref": "#/components/schemas/InventoryDetail"
                 }
               }
             }
           }
         ]
+      },
+      "InvoiceDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "product": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Product"
+              }
+            ]
+          },
+          "invoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "invoice": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Invoice"
+              }
+            ]
+          }
+        }
       },
       "Invoice": {
         "allOf": [
@@ -1023,7 +1168,7 @@
           }
         ]
       },
-      "Provider": {
+      "Place": {
         "allOf": [
           {
             "$ref": "#/components/schemas/AuditableEntity"
@@ -1046,74 +1191,19 @@
                 "items": {
                   "$ref": "#/components/schemas/Invoice"
                 }
+              },
+              "inventory": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "$ref": "#/components/schemas/Inventory"
+                }
               }
             }
           }
         ]
       },
-      "AuditableEntity": {
-        "type": "object",
-        "x-abstract": true,
-        "additionalProperties": false,
-        "properties": {
-          "createdBy": {
-            "type": "string",
-            "nullable": true
-          },
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          }
-        }
-      },
-      "InvoiceDetail": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "amount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "productId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "product": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/Product"
-              }
-            ]
-          },
-          "invoiceId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "invoice": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/Invoice"
-              }
-            ]
-          }
-        }
-      },
-      "Product": {
+      "Inventory": {
         "allOf": [
           {
             "$ref": "#/components/schemas/AuditableEntity"
@@ -1126,19 +1216,24 @@
                 "type": "integer",
                 "format": "int32"
               },
-              "name": {
+              "inventoryDate": {
                 "type": "string",
-                "nullable": true
+                "format": "date-time"
               },
-              "deleted": {
+              "isDraft": {
                 "type": "boolean"
               },
-              "invoiceDetails": {
-                "type": "array",
+              "placeId": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "place": {
                 "nullable": true,
-                "items": {
-                  "$ref": "#/components/schemas/InvoiceDetail"
-                }
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Place"
+                  }
+                ]
               },
               "inventoryDetails": {
                 "type": "array",
@@ -1185,7 +1280,31 @@
           }
         }
       },
-      "Inventory": {
+      "AuditableEntity": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "createdBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastModifiedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "Provider": {
         "allOf": [
           {
             "$ref": "#/components/schemas/AuditableEntity"
@@ -1198,35 +1317,92 @@
                 "type": "integer",
                 "format": "int32"
               },
-              "inventoryDate": {
+              "name": {
                 "type": "string",
-                "format": "date-time"
+                "nullable": true
               },
-              "isDraft": {
-                "type": "boolean"
-              },
-              "placeId": {
-                "type": "integer",
-                "format": "int32"
-              },
-              "place": {
-                "nullable": true,
-                "oneOf": [
-                  {
-                    "$ref": "#/components/schemas/Place"
-                  }
-                ]
-              },
-              "inventoryDetails": {
+              "invoices": {
                 "type": "array",
                 "nullable": true,
                 "items": {
-                  "$ref": "#/components/schemas/InventoryDetail"
+                  "$ref": "#/components/schemas/Invoice"
                 }
               }
             }
           }
         ]
+      },
+      "InvoicesVm": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "invoices": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/InvoiceDto"
+            }
+          }
+        }
+      },
+      "InvoiceDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dateInvoice": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "place": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Place"
+              }
+            ]
+          },
+          "provider": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Provider"
+              }
+            ]
+          },
+          "invoiceDetails": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/InvoiceDetailDto"
+            }
+          }
+        }
+      },
+      "UpdateInvoiceCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dateInvoice": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "placeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "providerId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
       },
       "PlacesVm": {
         "type": "object",

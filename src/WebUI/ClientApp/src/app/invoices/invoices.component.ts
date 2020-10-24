@@ -1,8 +1,10 @@
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { faPlus, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
-import { PlacesClient, PlaceDto, InvoicesClient, InvoiceDetailDto, ProductsClient, ProductDto, CreateInvoiceCommand, ProvidersClient, ProviderDto, InvoicesVm, InvoiceDto } from '../arkos-api';
-import { getLocaleDateTimeFormat } from '@angular/common';
+import {
+  PlacesClient, PlaceDto, InvoicesClient, InvoiceDetailDto, ProductsClient, ProductDto, CreateInvoiceCommand,
+  ProvidersClient, ProviderDto, InvoicesVm, InvoiceDto, UpdateInvoiceCommand, InvoiceDetailsClient, CreateInvoiceDetailCommand
+} from '../arkos-api';
 
 @Component({
   selector: 'app-invoices',
@@ -17,12 +19,15 @@ export class InvoicesComponent implements OnInit {
   newInvoiceDetailEditor: any = {};
   invoiceOptionsEditor: any = {};
   newInvoiceModalRef: BsModalRef;
+  newInvoiceDetailModalRef: BsModalRef;
+  deleteInvoiceModalRef: BsModalRef;
   invoiceOptionsModalRef: BsModalRef;
   place: PlaceDto;
   productList: ProductDto[];
   placeList: PlaceDto[];
   providerList: ProviderDto[];
   selectedInvoice: InvoiceDto;
+  selectedDetail: InvoiceDetailDto;
   invoiceList: any;
   clickedRow: number;
   invoiceDetailList: InvoiceDetailDto[] = [];
@@ -32,6 +37,7 @@ export class InvoicesComponent implements OnInit {
   constructor(
     private modalService: BsModalService,
     private invoicesClient: InvoicesClient,
+    private invoiceDetailsClient: InvoiceDetailsClient,
     private placesClient: PlacesClient,
     private productsClient: ProductsClient,
     private providerClient: ProvidersClient
@@ -59,7 +65,7 @@ export class InvoicesComponent implements OnInit {
     this.newInvoiceEditor = {};
   }
 
-  newInvoiceReset(): void {
+  showDetailOptionsModal(template: TemplateRef<any>): void {
 
   }
 
@@ -76,30 +82,88 @@ export class InvoicesComponent implements OnInit {
     this.invoiceOptionsEditor = {
       id: this.selectedInvoice.id,
       dateInvoice: this.selectedInvoice.dateInvoice,
-      place: this.selectedInvoice.place,
-      provider: this.selectedInvoice.provider,
+      placeId: this.selectedInvoice.place.id,
+      providerId: this.selectedInvoice.provider.id
     };
 
     this.invoiceOptionsModalRef = this.modalService.show(template);
+  }
+
+  confirmDeleteInvoice(template: TemplateRef<any>) {
+    this.invoiceOptionsModalRef.hide();
+    this.deleteInvoiceModalRef = this.modalService.show(template);
+  }
+
+  deleteInvoiceConfirmed(): void {
+    this.invoicesClient.delete(this.selectedInvoice.id).subscribe(
+      () => {
+        this.deleteInvoiceModalRef.hide();
+        this.vm.invoices = this.vm.invoices.filter(t => t.id != this.selectedInvoice.id)
+        this.selectedInvoice = this.vm.invoices.length ? this.vm.invoices[0] : null;
+      },
+      error => console.error(error)
+    );
+  }
+
+  updateInvoiceOptions() {
+    this.invoicesClient.update(this.selectedInvoice.id, <UpdateInvoiceCommand>{
+      id: this.invoiceOptionsEditor.id,
+      dateInvoice: this.invoiceOptionsEditor.dateInvoice,
+      placeId: this.invoiceOptionsEditor.placeId,
+      providerId: this.invoiceOptionsEditor.providerId,
+    }).subscribe(
+      () => {
+        this.selectedInvoice.dateInvoice = this.invoiceOptionsEditor.dateInvoice;
+        this.selectedInvoice.place = this.placeList.find(pl => pl.id == this.invoiceOptionsEditor.placeId);
+        this.selectedInvoice.provider = this.providerList.find(pr => pr.id == this.invoiceOptionsEditor.providerId);
+        this.invoiceOptionsModalRef.hide();
+        this.invoiceOptionsEditor = {};
+        this.vm.invoices;
+      },
+      error => console.error(error)
+    );
   }
 
   getProducts(): void {
     this.productsClient.get().subscribe(result => { this.productList = result.products });
   }
 
-  addInvoiceDetail() {
-    if (this.newInvoiceDetailEditor.product.id != null && this.newInvoiceDetailEditor.amount != null) {
-      let invoiceDetail = InvoiceDetailDto.fromJS({
-        productId: this.newInvoiceDetailEditor.product.id,
-        amount: this.newInvoiceDetailEditor.amount
-      });
-      this.invoiceDetailList.push(invoiceDetail);
-      this.newInvoiceDetailEditor = {};
-    }
+  showNewInvoiceDetailModal(template: TemplateRef<any>) {
+    this.getProducts();
+    this.newInvoiceDetailModalRef = this.modalService.show(template);
+  }
+
+  addDetail() {
+    let detail = InvoiceDetailDto.fromJS({
+      id: 0,
+      invoiceId: this.selectedInvoice.id,
+      amount: this.newInvoiceDetailEditor.amount,
+      product: this.newInvoiceDetailEditor.product
+    });
+    this.invoiceDetailsClient.create(<CreateInvoiceDetailCommand>{
+      invoiceId: this.selectedInvoice.id,
+      productId: detail.product.id,
+      amount: detail.amount
+    }).subscribe(
+      result => {
+        detail.id = result;
+        this.selectedInvoice.invoiceDetails.push(detail);
+        this.selectedDetail = detail;
+        this.newInvoiceDetailModalRef.hide();
+        this.newInvoiceDetailEditor = {};
+      },
+      error => console.error(error)
+    );
+  }
+
+  editItem(detail: InvoiceDetailDto, inputId: string): void {
+    this.selectedDetail = detail;
+    setTimeout(() => document.getElementById(inputId).focus(), 100);
   }
 
   addInvoice(): void {
     let invoice = InvoiceDto.fromJS({
+      id: 0,
       dateInvoice: this.newInvoiceEditor.dateInvoice,
       place: this.newInvoiceEditor.place,
       provider: this.newInvoiceEditor.provider
@@ -110,6 +174,7 @@ export class InvoicesComponent implements OnInit {
       providerId: this.newInvoiceEditor.provider.id
     }).subscribe(
       result => {
+        invoice.id = result;
         this.vm.invoices.push(invoice);
         this.selectedInvoice = invoice;
         this.newInvoiceModalRef.hide();

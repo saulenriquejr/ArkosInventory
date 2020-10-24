@@ -13,6 +13,7 @@ namespace Arkos.Application.Common.Interfaces
         DbSet<Place> Places { get; set; }
         DbSet<Product> Products { get; set; }
         DbSet<Invoice> Invoices { get; set; }
+        DbSet<InvoiceDetail> InvoiceDetails { get; set; }
         DbSet<Inventory> Inventories { get; set; }
         DbSet<InventoryDetail> InventoryDetails { get; set; }
         DbSet<Provider> Providers { get; set; }
