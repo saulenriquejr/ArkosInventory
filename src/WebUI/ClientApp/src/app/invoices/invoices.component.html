@@ -2,7 +2,7 @@
 
 <div *ngIf="vm">
   <div class="row">
-    <div class="row col-sm-4">
+    <div class="col-sm-4">
       <div class="clearfix">
         <h2 class="float-left">Agregar factura</h2>
         <button class="btn btn-default float-right" title="Add List..."
@@ -19,7 +19,6 @@
                   <th>Fecha</th>
                   <th>Local</th>
                   <th>Proveedor</th>
-                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -46,30 +45,34 @@
           <fa-icon [icon]="faEllipsisH"></fa-icon>
         </button>
       </div>
-      <ul id="invoice-details" class="list-group mb-2">
-        <li *ngFor="let detail of selectedInvoice.invoiceDetails; index as i" class="list-group-item">
-          <div class="d-flex">
-            <div class="flex-fill">
-              <div class="float-left">
-                {{ detail.product.name }}
-              </div>
-              <div class="float-left text-right">
-                <span class="badge badge-light">{{ detail.amount }}</span>
+      <div class="overflow-auto">
+        <ul id="invoice-details" class="list-group mb-2">
+          <li class="list-group-item" (click)="showNewInvoiceDetailModal(newInvoiceDetailModalTemplate)">
+            <button class="btn btn-default">Agregar producto...</button>
+          </li>
+          <li *ngFor="let detail of selectedInvoice.invoiceDetails; index as i" class="list-group-item">
+            <div class="d-flex float-center">
+              <div class="card text-center" style="width: 100%;">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-9">
+                      <h5 class="card-title">{{ detail.product.name }}</h5>
+                      <p class="card-text">Cantidad: {{ detail.amount }}</p>
+                    </div>
+                    <div class="col-3">
+                      <button id="DetailOptions" title="Detail Options..."
+                              (click)="showInvoiceDetailOptionsModal(InvoiceDetailOptionsModalTemplate,detail)"
+                              class="btn btn-default btn-xs" role="button">
+                        <fa-icon [icon]="faPencilAlt"></fa-icon>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="todo-item-commands">
-              <button id="DetailOptions" title="Detail Options..."
-                      (click)="showDetailOptionsModal(detailOptionsModalTemplate, item)"
-                      class="btn btn-default btn-xs" role="button">
-                <fa-icon [icon]="faEllipsisH"></fa-icon>
-              </button>
-            </div>
-          </div>
-        </li>
-        <li class="list-group-item" (click)="showNewInvoiceDetailModal(newInvoiceDetailModalTemplate)">
-          <button class="btn btn-default">Agregar producto...</button>
-        </li>
-      </ul>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
@@ -133,14 +136,17 @@
 
     <div class="form-group">
       <label for="title">Cantidad Producto</label>
-      <input type="number" class="form-control" id="productAmounttxt" placeholder="ingrese cantidad del producto" [(ngModel)]="newInvoiceDetailEditor.amount"
-             [ngClass]="{ 'is-invalid': newInvoiceDetailEditor.error }" />
+      <input type="number" class="form-control" id="productAmounttxt" placeholder="ingrese cantidad del producto" [(ngModel)]="newInvoiceDetailEditor.amount" />
+    </div>
+    <div class="form-group">
+      <label for="title">Precio de Venta</label>
+      <input type="number" class="form-control" id="productPricetxt" placeholder="ingrese precio del producto" [(ngModel)]="newInvoiceDetailEditor.price" />
     </div>
   </div>
   <div class="modal-footer">
     <div class="text-right">
       <button class="btn btn-default" (click)="newInvoiceDetailModalRef.hide()">Cancelar</button>
-      <button class="btn btn-primary" (click)="addDetail()">Agregar</button>
+      <button class="btn btn-primary" (click)="addInvoiceDetail()">Agregar</button>
     </div>
   </div>
 </ng-template>
@@ -179,7 +185,7 @@
       </div>
       <div class="float-right">
         <button class="btn btn-default" (click)="invoiceOptionsModalRef.hide()">Cancelar</button>
-        <button class="btn btn-primary" (click)="updateInvoiceOptions()">Actualizar</button>
+        <button class="btn btn-primary" (click)="updateInvoice()">Actualizar</button>
       </div>
     </div>
   </div>
@@ -199,6 +205,59 @@
     <div class="text-right">
       <button type="button" class="btn btn-default" (click)="deleteInvoiceModalRef.hide()">Cancelar</button>
       <button type="button" class="btn btn-danger" (click)="deleteInvoiceConfirmed()">Eliminar</button>
+    </div>
+  </div>
+</ng-template>
+
+
+<ng-template #InvoiceDetailOptionsModalTemplate>
+  <div class="modal-header clearfix">
+    <h4 class="modal-title float-left">Editar Producto</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="invoiceDetailOptionsModalRef.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group" id="productNameEdittxt">
+      <label>Nombre Producto:</label>
+      <select class="form-control" [(ngModel)]="invoiceDetailOptionsEditor.productId">
+        <option value="" disabled selected>seleccione un producto</option>
+        <option *ngFor="let product of productList" [ngValue]="product.id">{{product.name}}</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Cantidad Producto:</label>
+      <input type="number" class="form-control" id="productAmountEdittxt" placeholder="ingrese cantidad del producto"
+             [(ngModel)]="invoiceDetailOptionsEditor.amount" />
+    </div>
+  </div>
+  <div class="modal-footer">
+    <div class="clearfix">
+      <div class="float-left">
+        <button class="btn btn-default text-danger" (click)="confirmDeleteInvoiceDetail(deleteInvoiceDetailModalTemplate)">Eliminar</button>
+      </div>
+      <div class="float-right">
+        <button class="btn btn-default" (click)="invoiceDetailOptionsModalRef.hide()">Cancelar</button>
+        <button class="btn btn-primary" (click)="updateInvoiceDetail()">Actualizar</button>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #deleteInvoiceDetailModalTemplate>
+  <div class="modal-header clearfix">
+    <h4 class="modal-title float-left">¿Desea Eliminar "{{ selectedDetail.product.name }}" ?</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="deleteInvoiceModalRef.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p>Este producto se eliminara de forma permanente. </p>
+  </div>
+  <div class="modal-footer">
+    <div class="text-right">
+      <button type="button" class="btn btn-default" (click)="deleteInvoiceDetailModalRef.hide()">Cancelar</button>
+      <button type="button" class="btn btn-danger" (click)="deleteInvoiceDetailConfirmed()">Eliminar</button>
     </div>
   </div>
 </ng-template>

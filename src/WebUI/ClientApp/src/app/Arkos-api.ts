@@ -86,6 +86,8 @@ export class InventoryClient implements IInventoryClient {
 
 export interface IInvoiceDetailsClient {
     create(command: CreateInvoiceDetailCommand): Observable<number>;
+    update(id: number, command: UpdateInvoiceDetailCommand): Observable<FileResponse>;
+    delete(id: number): Observable<FileResponse>;
 }
 
 @Injectable({
@@ -151,6 +153,108 @@ export class InvoiceDetailsClient implements IInvoiceDetailsClient {
             }));
         }
         return _observableOf<number>(<any>null);
+    }
+
+    update(id: number, command: UpdateInvoiceDetailCommand): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/InvoiceDetails/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",			
+            headers: new HttpHeaders({
+                "Content-Type": "application/json", 
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdate(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processUpdate(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
+    }
+
+    delete(id: number): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/InvoiceDetails/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",			
+            headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
     }
 }
 
@@ -445,6 +549,76 @@ export class PlacesClient implements IPlacesClient {
 
     create(command: CreatePlaceCommand): Observable<number> {
         let url_ = this.baseUrl + "/api/Places";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",			
+            headers: new HttpHeaders({
+                "Content-Type": "application/json", 
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreate(<any>response_);
+                } catch (e) {
+                    return <Observable<number>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<number>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processCreate(response: HttpResponseBase): Observable<number> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<number>(<any>null);
+    }
+}
+
+export interface IProductPricesClient {
+    create(command: CreateProductPriceCommand): Observable<number>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class ProductPricesClient implements IProductPricesClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ? baseUrl : "";
+    }
+
+    create(command: CreateProductPriceCommand): Observable<number> {
+        let url_ = this.baseUrl + "/api/ProductPrices";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(command);
@@ -1614,6 +1788,50 @@ export interface ICreateInvoiceDetailCommand {
     amount?: number;
 }
 
+export class UpdateInvoiceDetailCommand implements IUpdateInvoiceDetailCommand {
+    id?: number;
+    amount?: number;
+    productId?: number;
+
+    constructor(data?: IUpdateInvoiceDetailCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.amount = _data["amount"];
+            this.productId = _data["productId"];
+        }
+    }
+
+    static fromJS(data: any): UpdateInvoiceDetailCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateInvoiceDetailCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["amount"] = this.amount;
+        data["productId"] = this.productId;
+        return data; 
+    }
+}
+
+export interface IUpdateInvoiceDetailCommand {
+    id?: number;
+    amount?: number;
+    productId?: number;
+}
+
 export class CreateInvoiceCommand implements ICreateInvoiceCommand {
     dateInvoice?: Date;
     placeId?: number;
@@ -1770,6 +1988,7 @@ export class Product extends AuditableEntity implements IProduct {
     deleted?: boolean;
     invoiceDetails?: InvoiceDetail[] | undefined;
     inventoryDetails?: InventoryDetail[] | undefined;
+    productPrices?: ProductPrice[] | undefined;
 
     constructor(data?: IProduct) {
         super(data);
@@ -1790,6 +2009,11 @@ export class Product extends AuditableEntity implements IProduct {
                 this.inventoryDetails = [] as any;
                 for (let item of _data["inventoryDetails"])
                     this.inventoryDetails!.push(InventoryDetail.fromJS(item));
+            }
+            if (Array.isArray(_data["productPrices"])) {
+                this.productPrices = [] as any;
+                for (let item of _data["productPrices"])
+                    this.productPrices!.push(ProductPrice.fromJS(item));
             }
         }
     }
@@ -1816,6 +2040,11 @@ export class Product extends AuditableEntity implements IProduct {
             for (let item of this.inventoryDetails)
                 data["inventoryDetails"].push(item.toJSON());
         }
+        if (Array.isArray(this.productPrices)) {
+            data["productPrices"] = [];
+            for (let item of this.productPrices)
+                data["productPrices"].push(item.toJSON());
+        }
         super.toJSON(data);
         return data; 
     }
@@ -1827,6 +2056,7 @@ export interface IProduct extends IAuditableEntity {
     deleted?: boolean;
     invoiceDetails?: InvoiceDetail[] | undefined;
     inventoryDetails?: InventoryDetail[] | undefined;
+    productPrices?: ProductPrice[] | undefined;
 }
 
 export class InvoiceDetail implements IInvoiceDetail {
@@ -1955,6 +2185,7 @@ export class Place extends AuditableEntity implements IPlace {
     name?: string | undefined;
     invoices?: Invoice[] | undefined;
     inventory?: Inventory[] | undefined;
+    productPrices?: ProductPrice[] | undefined;
 
     constructor(data?: IPlace) {
         super(data);
@@ -1974,6 +2205,11 @@ export class Place extends AuditableEntity implements IPlace {
                 this.inventory = [] as any;
                 for (let item of _data["inventory"])
                     this.inventory!.push(Inventory.fromJS(item));
+            }
+            if (Array.isArray(_data["productPrices"])) {
+                this.productPrices = [] as any;
+                for (let item of _data["productPrices"])
+                    this.productPrices!.push(ProductPrice.fromJS(item));
             }
         }
     }
@@ -1999,6 +2235,11 @@ export class Place extends AuditableEntity implements IPlace {
             for (let item of this.inventory)
                 data["inventory"].push(item.toJSON());
         }
+        if (Array.isArray(this.productPrices)) {
+            data["productPrices"] = [];
+            for (let item of this.productPrices)
+                data["productPrices"].push(item.toJSON());
+        }
         super.toJSON(data);
         return data; 
     }
@@ -2009,6 +2250,7 @@ export interface IPlace extends IAuditableEntity {
     name?: string | undefined;
     invoices?: Invoice[] | undefined;
     inventory?: Inventory[] | undefined;
+    productPrices?: ProductPrice[] | undefined;
 }
 
 export class Inventory extends AuditableEntity implements IInventory {
@@ -2126,6 +2368,59 @@ export interface IInventoryDetail {
     manualCount?: number;
     currentPrice?: number;
     totalSale?: number;
+}
+
+export class ProductPrice extends AuditableEntity implements IProductPrice {
+    id?: number;
+    productId?: number;
+    product?: Product | undefined;
+    placeId?: number;
+    place?: Place | undefined;
+    price?: number;
+
+    constructor(data?: IProductPrice) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.id = _data["id"];
+            this.productId = _data["productId"];
+            this.product = _data["product"] ? Product.fromJS(_data["product"]) : <any>undefined;
+            this.placeId = _data["placeId"];
+            this.place = _data["place"] ? Place.fromJS(_data["place"]) : <any>undefined;
+            this.price = _data["price"];
+        }
+    }
+
+    static fromJS(data: any): ProductPrice {
+        data = typeof data === 'object' ? data : {};
+        let result = new ProductPrice();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["productId"] = this.productId;
+        data["product"] = this.product ? this.product.toJSON() : <any>undefined;
+        data["placeId"] = this.placeId;
+        data["place"] = this.place ? this.place.toJSON() : <any>undefined;
+        data["price"] = this.price;
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IProductPrice extends IAuditableEntity {
+    id?: number;
+    productId?: number;
+    product?: Product | undefined;
+    placeId?: number;
+    place?: Place | undefined;
+    price?: number;
 }
 
 export class Provider extends AuditableEntity implements IProvider {
@@ -2447,6 +2742,50 @@ export class CreatePlaceCommand implements ICreatePlaceCommand {
 
 export interface ICreatePlaceCommand {
     name?: string | undefined;
+}
+
+export class CreateProductPriceCommand implements ICreateProductPriceCommand {
+    placeId?: number;
+    productId?: number;
+    price?: number;
+
+    constructor(data?: ICreateProductPriceCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.placeId = _data["placeId"];
+            this.productId = _data["productId"];
+            this.price = _data["price"];
+        }
+    }
+
+    static fromJS(data: any): CreateProductPriceCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateProductPriceCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["placeId"] = this.placeId;
+        data["productId"] = this.productId;
+        data["price"] = this.price;
+        return data; 
+    }
+}
+
+export interface ICreateProductPriceCommand {
+    placeId?: number;
+    productId?: number;
+    price?: number;
 }
 
 export class CreateProductCommand implements ICreateProductCommand {

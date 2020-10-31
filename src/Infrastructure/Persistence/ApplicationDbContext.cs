@@ -39,8 +39,9 @@ namespace Arkos.Infrastructure.Persistence
         public DbSet<Inventory> Inventories { get; set; }
         public DbSet<InventoryDetail> InventoryDetails { get; set; }
         public DbSet<Provider> Providers { get; set; }
+		public DbSet<ProductPrice> ProductPrices { get; set; }
 
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+		public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
             {

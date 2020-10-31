@@ -12,32 +12,32 @@ using System.Threading.Tasks;
 
 namespace Arkos.Application.Invoices.Command
 {
-    public class DeleteInvoiceCommand : IRequest
+    public class DeleteInvoiceDetailCommand : IRequest
     {
         public int Id { get; set; }
     }
 
-    public class DeleteInvoiceCommandHandler : IRequestHandler<DeleteInvoiceCommand>
+    public class DeleteInvoiceDetailCommandHandler : IRequestHandler<DeleteInvoiceDetailCommand>
     {
         private readonly IApplicationDbContext _context;
 
-        public DeleteInvoiceCommandHandler(IApplicationDbContext context)
+        public DeleteInvoiceDetailCommandHandler(IApplicationDbContext context)
         {
             _context = context;
         }
 
-        public async Task<Unit> Handle(DeleteInvoiceCommand request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(DeleteInvoiceDetailCommand request, CancellationToken cancellationToken)
         {
-            var entity = await _context.Invoices
+            var entity = await _context.InvoiceDetails
                 .Where(l => l.Id == request.Id)
                 .SingleOrDefaultAsync(cancellationToken);
 
             if (entity == null)
             {
-                throw new NotFoundException(nameof(Invoice), request.Id);
+                throw new NotFoundException(nameof(InvoiceDetail), request.Id);
             }
 
-            _context.Invoices.Remove(entity);
+            _context.InvoiceDetails.Remove(entity);
 
             await _context.SaveChangesAsync(cancellationToken);
 

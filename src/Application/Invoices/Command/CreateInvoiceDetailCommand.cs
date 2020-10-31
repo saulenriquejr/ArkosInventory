@@ -9,36 +9,45 @@ using System.Threading.Tasks;
 
 namespace Arkos.Application.Invoices.Command
 {
-    public class CreateInvoiceDetailCommand : IRequest<int>
-    {
-        public int InvoiceId { get; set; }
-        public int ProductId { get; set; }
-        public int Amount { get; set; }
-    }
+	public class CreateInvoiceDetailCommand : IRequest<int>
+	{
+		public int InvoiceId { get; set; }
+		public int ProductId { get; set; }
+		public int Amount { get; set; }
+	}
 
-    public class CreateTodoItemCommandHandler : IRequestHandler<CreateInvoiceDetailCommand, int>
-    {
-        private readonly IApplicationDbContext _context;
+	public class CreateInvoiceDetailCommandHandler : IRequestHandler<CreateInvoiceDetailCommand, int>
+	{
+		private readonly IApplicationDbContext _context;
 
-        public CreateTodoItemCommandHandler(IApplicationDbContext context)
-        {
-            _context = context;
-        }
+		public CreateInvoiceDetailCommandHandler(IApplicationDbContext context)
+		{
+			_context = context;
+		}
 
-        public async Task<int> Handle(CreateInvoiceDetailCommand request, CancellationToken cancellationToken)
-        {
-            var entity = new InvoiceDetail
-            {
-                InvoiceId=request.InvoiceId,
-                ProductId = request.ProductId,
-                Amount = request.Amount
-            };
+		public async Task<int> Handle(CreateInvoiceDetailCommand request, CancellationToken cancellationToken)
+		{
+			var entity = new InvoiceDetail
+			{
+				InvoiceId = request.InvoiceId,
+				ProductId = request.ProductId,
+				Amount = request.Amount
+			};
 
-            _context.InvoiceDetails.Add(entity);
+			_context.InvoiceDetails.Add(entity);
 
-            await _context.SaveChangesAsync(cancellationToken);
 
-            return entity.Id;
-        }
-    }
+
+			//TODO: insert into product Prices (not always)
+
+			//get last price of that product in this place
+
+			//if the price is different, create a new reord in productprice
+			//else don't
+
+			await _context.SaveChangesAsync(cancellationToken);
+
+			return entity.Id;
+		}
+	}
 }

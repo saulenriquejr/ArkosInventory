@@ -77,6 +77,92 @@
         ]
       }
     },
+    "/api/InvoiceDetails/{id}": {
+      "put": {
+        "tags": [
+          "InvoiceDetails"
+        ],
+        "operationId": "InvoiceDetails_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInvoiceDetailCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "InvoiceDetails"
+        ],
+        "operationId": "InvoiceDetails_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/Invoices": {
       "post": {
         "tags": [
@@ -259,6 +345,44 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreatePlaceCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/ProductPrices": {
+      "post": {
+        "tags": [
+          "ProductPrices"
+        ],
+        "operationId": "ProductPrices_Create",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductPriceCommand"
               }
             }
           },
@@ -989,6 +1113,24 @@
           }
         }
       },
+      "UpdateInvoiceDetailCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "CreateInvoiceCommand": {
         "type": "object",
         "additionalProperties": false,
@@ -1072,6 +1214,13 @@
                 "nullable": true,
                 "items": {
                   "$ref": "#/components/schemas/InventoryDetail"
+                }
+              },
+              "productPrices": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "$ref": "#/components/schemas/ProductPrice"
                 }
               }
             }
@@ -1198,6 +1347,13 @@
                 "items": {
                   "$ref": "#/components/schemas/Inventory"
                 }
+              },
+              "productPrices": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "$ref": "#/components/schemas/ProductPrice"
+                }
               }
             }
           }
@@ -1303,6 +1459,51 @@
             "nullable": true
           }
         }
+      },
+      "ProductPrice": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AuditableEntity"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "productId": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "product": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                ]
+              },
+              "placeId": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "place": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Place"
+                  }
+                ]
+              },
+              "price": {
+                "type": "number",
+                "format": "decimal"
+              }
+            }
+          }
+        ]
       },
       "Provider": {
         "allOf": [
@@ -1438,6 +1639,24 @@
           "name": {
             "type": "string",
             "nullable": true
+          }
+        }
+      },
+      "CreateProductPriceCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "placeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
           }
         }
       },

@@ -40,17 +40,6 @@ namespace Arkos.Application.Invoices.Command
                 ProviderId = request.ProviderId
             };
 
-            //foreach (var invoiceDetail in request.InvoiceDetails)
-            //{
-            //    var invoiceDetailEntity = new InvoiceDetail()
-            //    {
-            //        Amount = invoiceDetail.Amount,
-            //        ProductId = invoiceDetail.ProductId
-            //    };
-
-            //    entity.InvoiceDetails.Add(invoiceDetailEntity);
-            //}
-
             _context.Invoices.Add(entity);
 
             await _context.SaveChangesAsync(cancellationToken);
