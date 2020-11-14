@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Arkos.Application.ProductPrices
+namespace Arkos.Application.ProductPrices.Command
 {
 	public class CreateProductPriceCommand : IRequest<int>
 	{

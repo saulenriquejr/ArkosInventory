@@ -1,9 +1,7 @@
-﻿using Arkos.Application.Invoices.Command;
-using Arkos.Application.ProductPrices;
+﻿using Arkos.Application.ProductPrices.Command;
+using Arkos.Application.ProductPrices.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,11 +16,11 @@ namespace Arkos.WebUI.Controllers
             return await Mediator.Send(command);
         }
 
-		//[HttpGet]
-		//public async Task<ActionResult<InvoicesVm>> Get()
-		//{
-		//    return await Mediator.Send(new GetInvoicesQuery());
-		//}
+		[HttpGet]
+		public async Task<ActionResult<ProductPricesVM>> Get()
+		{
+			return await Mediator.Send(new GetLatestProductPriceQuery());
+		}
 
 		//[HttpPut("{id}")]
 		//public async Task<ActionResult> Update(int id, UpdateInvoiceDetailCommand command)

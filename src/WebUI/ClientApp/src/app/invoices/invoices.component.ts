@@ -1,10 +1,10 @@
 import { Component, OnInit, TemplateRef } from '@angular/core';
-import { faPlus, faEllipsisH, faPencilAlt, faPencilRuler } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faEllipsisH, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import {
-  PlacesClient, PlaceDto, InvoicesClient, InvoiceDetailDto, ProductsClient, ProductPricesClient, ProductDto, CreateInvoiceCommand,
+  PlacesClient, PlaceDto, InvoicesClient, InvoiceDetailDto, ProductsClient, ProductPricesClient, ProductDto, ProductPriceDto, CreateInvoiceCommand,
   ProvidersClient, ProviderDto, InvoicesVm, InvoiceDto,
-  UpdateInvoiceCommand, InvoiceDetailsClient, CreateInvoiceDetailCommand, InvoiceDetail, UpdateInvoiceDetailCommand, CreateProductPriceCommand
+  UpdateInvoiceCommand, InvoiceDetailsClient, CreateInvoiceDetailCommand, InvoiceDetail, UpdateInvoiceDetailCommand, CreateProductPriceCommand, ProductPrice
 } from '../arkos-api';
 
 @Component({
@@ -28,17 +28,16 @@ export class InvoicesComponent implements OnInit {
   deleteInvoiceDetailModalRef: BsModalRef;
   place: PlaceDto;
   productList: ProductDto[];
+  productPriceList: ProductPriceDto[];
   placeList: PlaceDto[];
   providerList: ProviderDto[];
   selectedInvoice: InvoiceDto;
   selectedDetail: InvoiceDetailDto;
   invoiceList: any;
-  clickedRow: number;
   invoiceDetailList: InvoiceDetailDto[] = [];
   faPlus = faPlus;
   faEllipsisH = faEllipsisH;
   faPencilAlt = faPencilAlt;
-  faPencilRuler = faPencilRuler;
 
   constructor(
     private modalService: BsModalService,
@@ -64,13 +63,16 @@ export class InvoicesComponent implements OnInit {
 
     this.productsClient.get().subscribe(
       result => { this.productList = result.products });
+
+    this.productPricesClient.get().subscribe(
+      result => { this.productPriceList = result.productPrices });
   }
 
   ngOnInit(): void {
-
   }
 
   addInvoice(): void {
+    this.productPriceList;
     let invoice = InvoiceDto.fromJS({
       id: 0,
       dateInvoice: this.newInvoiceEditor.dateInvoice,
@@ -104,23 +106,29 @@ export class InvoicesComponent implements OnInit {
       id: 0,
       invoiceId: this.selectedInvoice.id,
       amount: this.newInvoiceDetailEditor.amount,
-      product: this.newInvoiceDetailEditor.product
+      product: this.newInvoiceDetailEditor.product,
+      productPrice: this.newInvoiceDetailEditor.productPrice
     });
+
     this.invoiceDetailsClient.create(<CreateInvoiceDetailCommand>{
-      invoiceId: this.selectedInvoice.id,
+      invoiceId: detail.invoiceId,
       productId: detail.product.id,
-      amount: detail.amount
+      amount: detail.amount,
+      productPrice: detail.productPrice
 
     }).subscribe(
       result => {
         detail.id = result;
         this.selectedInvoice.invoiceDetails.push(detail);
         this.selectedDetail = detail;
-        this.productPricesClient.create(<CreateProductPriceCommand>{
-          placeId: this.selectedInvoice.place.id,
-          productId: detail.product.id,
-          price: this.newInvoiceDetailEditor.price
-        }).subscribe(error => console.error(error));
+
+        if (this.selectedDetail.productPrice != this.productPriceList.find(pp => pp.productId == this.selectedDetail.product.id).price) {
+          this.productPricesClient.create(<CreateProductPriceCommand>{
+            placeId: this.selectedInvoice.place.id,
+            productId: detail.product.id,
+            price: detail.productPrice
+          }).subscribe(result => { this.getLatestProductPrice(); }, error => console.error(error));
+        }
 
         this.newInvoiceDetailModalRef.hide();
         this.newInvoiceDetailEditor = {};
@@ -160,6 +168,15 @@ export class InvoicesComponent implements OnInit {
     );
   }
 
+  disableProduct(id: number): boolean {
+    return this.selectedInvoice.invoiceDetails.find(i => i.product.id == id) == undefined ? false : true;
+  }
+
+  getLatestProductPrice(): void {
+    this.productPricesClient.get().subscribe(
+      result => { this.productPriceList = result.productPrices });
+  }
+
   newInvoiceCancelled(): void {
     this.newInvoiceModalRef.hide();
     this.newInvoiceEditor = {};
@@ -171,7 +188,8 @@ export class InvoicesComponent implements OnInit {
       id: this.selectedDetail.id,
       invoiceId: this.selectedInvoice.id,
       amount: this.selectedDetail.amount,
-      productId: this.selectedDetail.product.id
+      productId: this.selectedDetail.product.id,
+      productPrice: this.selectedDetail.productPrice
     };
 
     this.invoiceDetailOptionsModalRef = this.modalService.show(template);
@@ -219,10 +237,12 @@ export class InvoicesComponent implements OnInit {
     this.invoiceDetailsClient.update(this.selectedDetail.id, <UpdateInvoiceDetailCommand>{
       id: this.invoiceDetailOptionsEditor.id,
       amount: this.invoiceDetailOptionsEditor.amount,
-      productId: this.invoiceDetailOptionsEditor.productId
+      productId: this.invoiceDetailOptionsEditor.productId,
+      productPrice: this.invoiceDetailOptionsEditor.productPrice
     }).subscribe(
       () => {
         this.selectedDetail.amount = this.invoiceDetailOptionsEditor.amount;
+        this.selectedDetail.productPrice = this.invoiceDetailOptionsEditor.productPrice;
         this.selectedDetail.product = this.productList.find(p => p.id == this.invoiceDetailOptionsEditor.productId);
 
         this.invoiceDetailOptionsModalRef.hide();

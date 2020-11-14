@@ -13,6 +13,7 @@ namespace Arkos.Application.Invoices.Command
 	{
 		public int InvoiceId { get; set; }
 		public int ProductId { get; set; }
+		public int ProductPrice { get; set; }
 		public int Amount { get; set; }
 	}
 
@@ -31,7 +32,8 @@ namespace Arkos.Application.Invoices.Command
 			{
 				InvoiceId = request.InvoiceId,
 				ProductId = request.ProductId,
-				Amount = request.Amount
+				Amount = request.Amount,
+				ProductPrice = request.ProductPrice
 			};
 
 			_context.InvoiceDetails.Add(entity);

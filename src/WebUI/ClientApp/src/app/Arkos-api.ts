@@ -602,6 +602,7 @@ export class PlacesClient implements IPlacesClient {
 
 export interface IProductPricesClient {
     create(command: CreateProductPriceCommand): Observable<number>;
+    get(): Observable<ProductPricesVM>;
 }
 
 @Injectable({
@@ -667,6 +668,54 @@ export class ProductPricesClient implements IProductPricesClient {
             }));
         }
         return _observableOf<number>(<any>null);
+    }
+
+    get(): Observable<ProductPricesVM> {
+        let url_ = this.baseUrl + "/api/ProductPrices";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",			
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGet(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGet(<any>response_);
+                } catch (e) {
+                    return <Observable<ProductPricesVM>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<ProductPricesVM>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGet(response: HttpResponseBase): Observable<ProductPricesVM> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ProductPricesVM.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<ProductPricesVM>(<any>null);
     }
 }
 
@@ -1747,6 +1796,7 @@ export interface ICreateInventoryDetailDto {
 export class CreateInvoiceDetailCommand implements ICreateInvoiceDetailCommand {
     invoiceId?: number;
     productId?: number;
+    productPrice?: number;
     amount?: number;
 
     constructor(data?: ICreateInvoiceDetailCommand) {
@@ -1762,6 +1812,7 @@ export class CreateInvoiceDetailCommand implements ICreateInvoiceDetailCommand {
         if (_data) {
             this.invoiceId = _data["invoiceId"];
             this.productId = _data["productId"];
+            this.productPrice = _data["productPrice"];
             this.amount = _data["amount"];
         }
     }
@@ -1777,6 +1828,7 @@ export class CreateInvoiceDetailCommand implements ICreateInvoiceDetailCommand {
         data = typeof data === 'object' ? data : {};
         data["invoiceId"] = this.invoiceId;
         data["productId"] = this.productId;
+        data["productPrice"] = this.productPrice;
         data["amount"] = this.amount;
         return data; 
     }
@@ -1785,6 +1837,7 @@ export class CreateInvoiceDetailCommand implements ICreateInvoiceDetailCommand {
 export interface ICreateInvoiceDetailCommand {
     invoiceId?: number;
     productId?: number;
+    productPrice?: number;
     amount?: number;
 }
 
@@ -1792,6 +1845,7 @@ export class UpdateInvoiceDetailCommand implements IUpdateInvoiceDetailCommand {
     id?: number;
     amount?: number;
     productId?: number;
+    productPrice?: number;
 
     constructor(data?: IUpdateInvoiceDetailCommand) {
         if (data) {
@@ -1807,6 +1861,7 @@ export class UpdateInvoiceDetailCommand implements IUpdateInvoiceDetailCommand {
             this.id = _data["id"];
             this.amount = _data["amount"];
             this.productId = _data["productId"];
+            this.productPrice = _data["productPrice"];
         }
     }
 
@@ -1822,6 +1877,7 @@ export class UpdateInvoiceDetailCommand implements IUpdateInvoiceDetailCommand {
         data["id"] = this.id;
         data["amount"] = this.amount;
         data["productId"] = this.productId;
+        data["productPrice"] = this.productPrice;
         return data; 
     }
 }
@@ -1830,6 +1886,7 @@ export interface IUpdateInvoiceDetailCommand {
     id?: number;
     amount?: number;
     productId?: number;
+    productPrice?: number;
 }
 
 export class CreateInvoiceCommand implements ICreateInvoiceCommand {
@@ -1892,6 +1949,7 @@ export class InvoiceDetailDto implements IInvoiceDetailDto {
     id?: number;
     invoiceId?: number;
     amount?: number;
+    productPrice?: number;
     product?: Product | undefined;
 
     constructor(data?: IInvoiceDetailDto) {
@@ -1908,6 +1966,7 @@ export class InvoiceDetailDto implements IInvoiceDetailDto {
             this.id = _data["id"];
             this.invoiceId = _data["invoiceId"];
             this.amount = _data["amount"];
+            this.productPrice = _data["productPrice"];
             this.product = _data["product"] ? Product.fromJS(_data["product"]) : <any>undefined;
         }
     }
@@ -1924,6 +1983,7 @@ export class InvoiceDetailDto implements IInvoiceDetailDto {
         data["id"] = this.id;
         data["invoiceId"] = this.invoiceId;
         data["amount"] = this.amount;
+        data["productPrice"] = this.productPrice;
         data["product"] = this.product ? this.product.toJSON() : <any>undefined;
         return data; 
     }
@@ -1933,6 +1993,7 @@ export interface IInvoiceDetailDto {
     id?: number;
     invoiceId?: number;
     amount?: number;
+    productPrice?: number;
     product?: Product | undefined;
 }
 
@@ -2063,6 +2124,7 @@ export class InvoiceDetail implements IInvoiceDetail {
     id?: number;
     amount?: number;
     productId?: number;
+    productPrice?: number;
     product?: Product | undefined;
     invoiceId?: number;
     invoice?: Invoice | undefined;
@@ -2081,6 +2143,7 @@ export class InvoiceDetail implements IInvoiceDetail {
             this.id = _data["id"];
             this.amount = _data["amount"];
             this.productId = _data["productId"];
+            this.productPrice = _data["productPrice"];
             this.product = _data["product"] ? Product.fromJS(_data["product"]) : <any>undefined;
             this.invoiceId = _data["invoiceId"];
             this.invoice = _data["invoice"] ? Invoice.fromJS(_data["invoice"]) : <any>undefined;
@@ -2099,6 +2162,7 @@ export class InvoiceDetail implements IInvoiceDetail {
         data["id"] = this.id;
         data["amount"] = this.amount;
         data["productId"] = this.productId;
+        data["productPrice"] = this.productPrice;
         data["product"] = this.product ? this.product.toJSON() : <any>undefined;
         data["invoiceId"] = this.invoiceId;
         data["invoice"] = this.invoice ? this.invoice.toJSON() : <any>undefined;
@@ -2110,6 +2174,7 @@ export interface IInvoiceDetail {
     id?: number;
     amount?: number;
     productId?: number;
+    productPrice?: number;
     product?: Product | undefined;
     invoiceId?: number;
     invoice?: Invoice | undefined;
@@ -2785,6 +2850,102 @@ export class CreateProductPriceCommand implements ICreateProductPriceCommand {
 export interface ICreateProductPriceCommand {
     placeId?: number;
     productId?: number;
+    price?: number;
+}
+
+export class ProductPricesVM implements IProductPricesVM {
+    productPrices?: ProductPriceDto[] | undefined;
+
+    constructor(data?: IProductPricesVM) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["productPrices"])) {
+                this.productPrices = [] as any;
+                for (let item of _data["productPrices"])
+                    this.productPrices!.push(ProductPriceDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): ProductPricesVM {
+        data = typeof data === 'object' ? data : {};
+        let result = new ProductPricesVM();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.productPrices)) {
+            data["productPrices"] = [];
+            for (let item of this.productPrices)
+                data["productPrices"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface IProductPricesVM {
+    productPrices?: ProductPriceDto[] | undefined;
+}
+
+export class ProductPriceDto implements IProductPriceDto {
+    id?: number;
+    created?: Date;
+    productId?: number;
+    placeId?: number;
+    price?: number;
+
+    constructor(data?: IProductPriceDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.created = _data["created"] ? new Date(_data["created"].toString()) : <any>undefined;
+            this.productId = _data["productId"];
+            this.placeId = _data["placeId"];
+            this.price = _data["price"];
+        }
+    }
+
+    static fromJS(data: any): ProductPriceDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ProductPriceDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["created"] = this.created ? this.created.toISOString() : <any>undefined;
+        data["productId"] = this.productId;
+        data["placeId"] = this.placeId;
+        data["price"] = this.price;
+        return data; 
+    }
+}
+
+export interface IProductPriceDto {
+    id?: number;
+    created?: Date;
+    productId?: number;
+    placeId?: number;
     price?: number;
 }
 

@@ -15,6 +15,7 @@ namespace Arkos.Application.Invoices.Command
         public int Id { get; set; }
         public int Amount { get; set; }
         public int ProductId { get; set; }
+        public int ProductPrice { get; set; }
     }
 
     public class UpdateInvoiceDetailCommandHandler : IRequestHandler<UpdateInvoiceDetailCommand>
@@ -37,6 +38,7 @@ namespace Arkos.Application.Invoices.Command
 
             entity.ProductId = request.ProductId;
             entity.Amount = request.Amount;
+            entity.ProductPrice = request.ProductPrice;
 
             await _context.SaveChangesAsync(cancellationToken);
 

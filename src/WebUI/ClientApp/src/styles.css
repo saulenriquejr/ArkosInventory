@@ -18,4 +18,9 @@ code {
 .table tr.active td {
   background-color: lightblue !important;
   color: black;
-}   
+}
+
+.active {
+  background-color: lightblue !important;
+  color: black;
+}

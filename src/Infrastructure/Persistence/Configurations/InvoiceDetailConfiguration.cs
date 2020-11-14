@@ -19,6 +19,15 @@ namespace Arkos.Infrastructure.Persistence.Configurations
                 .HasForeignKey(invoiceDetail => invoiceDetail.ProductId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_InvoiceDetails_Products");
+
+            builder.Property(pp => pp.Amount)
+                .IsRequired();
+
+            builder.Property(pp => pp.ProductPrice)
+                .IsRequired();
+
+            builder.Property(pp => pp.ProductPrice)
+                .HasColumnType("Money");
         }
     }
 }
