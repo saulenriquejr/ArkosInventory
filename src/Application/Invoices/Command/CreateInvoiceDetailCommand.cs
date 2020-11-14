@@ -38,15 +38,6 @@ namespace Arkos.Application.Invoices.Command
 
 			_context.InvoiceDetails.Add(entity);
 
-
-
-			//TODO: insert into product Prices (not always)
-
-			//get last price of that product in this place
-
-			//if the price is different, create a new reord in productprice
-			//else don't
-
 			await _context.SaveChangesAsync(cancellationToken);
 
 			return entity.Id;

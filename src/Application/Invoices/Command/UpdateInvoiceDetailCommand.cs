@@ -10,39 +10,39 @@ using System.Threading.Tasks;
 
 namespace Arkos.Application.Invoices.Command
 {
-    public class UpdateInvoiceDetailCommand : IRequest
-    {
-        public int Id { get; set; }
-        public int Amount { get; set; }
-        public int ProductId { get; set; }
-        public int ProductPrice { get; set; }
-    }
+	public class UpdateInvoiceDetailCommand : IRequest
+	{
+		public int Id { get; set; }
+		public int Amount { get; set; }
+		public int ProductId { get; set; }
+		public int ProductPrice { get; set; }
+	}
 
-    public class UpdateInvoiceDetailCommandHandler : IRequestHandler<UpdateInvoiceDetailCommand>
-    {
-        private readonly IApplicationDbContext _context;
+	public class UpdateInvoiceDetailCommandHandler : IRequestHandler<UpdateInvoiceDetailCommand>
+	{
+		private readonly IApplicationDbContext _context;
 
-        public UpdateInvoiceDetailCommandHandler(IApplicationDbContext context)
-        {
-            _context = context;
-        }
+		public UpdateInvoiceDetailCommandHandler(IApplicationDbContext context)
+		{
+			_context = context;
+		}
 
 		public async Task<Unit> Handle(UpdateInvoiceDetailCommand request, CancellationToken cancellationToken)
 		{
-            var entity = await _context.InvoiceDetails.FindAsync(request.Id);
+			var entity = await _context.InvoiceDetails.FindAsync(request.Id);
 
-            if (entity == null)
-            {
-                throw new NotFoundException(nameof(InvoiceDetail), request.Id);
-            }
+			if (entity == null)
+			{
+				throw new NotFoundException(nameof(InvoiceDetail), request.Id);
+			}
 
-            entity.ProductId = request.ProductId;
-            entity.Amount = request.Amount;
-            entity.ProductPrice = request.ProductPrice;
+			entity.ProductId = request.ProductId;
+			entity.Amount = request.Amount;
+			entity.ProductPrice = request.ProductPrice;
 
-            await _context.SaveChangesAsync(cancellationToken);
+			await _context.SaveChangesAsync(cancellationToken);
 
-            return Unit.Value;
+			return Unit.Value;
 		}
 	}
 }
