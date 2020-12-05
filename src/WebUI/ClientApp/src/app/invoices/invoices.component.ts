@@ -1,3 +1,5 @@
+import { CurrencyPipe } from '@angular/common';
+import { FormBuilder, Validators, FormGroup, FormControl } from '@angular/forms';
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { faPlus, faEllipsisH, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
@@ -14,32 +16,40 @@ import {
 })
 export class InvoicesComponent implements OnInit {
 
+  count = 0;
+  date = new Date();
   debug = false;
-  vm: InvoicesVm;
-  newInvoiceEditor: any = {};
-  newInvoiceDetailEditor: any = {};
-  invoiceOptionsEditor: any = {};
-  invoiceDetailOptionsEditor: any = {};
-  newInvoiceModalRef: BsModalRef;
-  newInvoiceDetailModalRef: BsModalRef;
-  invoiceOptionsModalRef: BsModalRef;
-  deleteInvoiceModalRef: BsModalRef;
-  invoiceDetailOptionsModalRef: BsModalRef;
   deleteInvoiceDetailModalRef: BsModalRef;
-  place: PlaceDto;
-  productList: ProductDto[];
-  productPriceList: ProductPriceDto[];
-  placeList: PlaceDto[];
-  providerList: ProviderDto[];
-  selectedInvoice: InvoiceDto;
-  selectedDetail: InvoiceDetailDto;
-  invoiceList: any;
-  invoiceDetailList: InvoiceDetailDto[] = [];
-  faPlus = faPlus;
+  deleteInvoiceModalRef: BsModalRef;
   faEllipsisH = faEllipsisH;
   faPencilAlt = faPencilAlt;
+  faPlus = faPlus;
+  invoiceDetailList: InvoiceDetailDto[] = [];
+  invoiceDetailOptionsForm: FormGroup;
+  invoiceDetailOptionsModalRef: BsModalRef;
+  invoiceList: any;
+  invoiceOptionsEditor: any = {};
+  invoiceOptionsModalRef: BsModalRef;
+  newInvoiceDetailForm: FormGroup;
+  newInvoiceDetailModalRef: BsModalRef;
+  newInvoiceEditor: any = {};
+  newInvoiceModalRef: BsModalRef;
+  page = 1;
+  pageSize = 3;
+  pageSizeOptions = [3, 5, 10, 15, 20];
+  place: PlaceDto;
+  placeList: PlaceDto[];
+  productList: ProductDto[];
+  productPriceList: ProductPriceDto[];
+  providerList: ProviderDto[];
+  searchFilterForm: FormGroup;
+  selectedInvoice: InvoiceDto;
+  selectedDetail: InvoiceDetailDto;
+  vm: InvoicesVm;
 
   constructor(
+    private currencyPipe: CurrencyPipe,
+    private fb: FormBuilder,
     private modalService: BsModalService,
     private invoicesClient: InvoicesClient,
     private invoiceDetailsClient: InvoiceDetailsClient,
@@ -69,10 +79,53 @@ export class InvoicesComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.searchFilterForm = this.fb.group({
+      startDate: [new Date(this.date.getFullYear(), this.date.getMonth(), 1), Validators.required],
+      endDate: [new Date(this.date.getFullYear(), this.date.getMonth() + 1, 0), Validators.required],
+      placeFilter: [[], Validators.required],
+      providerFilter: [[], Validators.required],
+    });
+
+    this.newInvoiceDetailForm = this.fb.group({
+      product: ['', Validators.required],
+      amount: ['', Validators.required],
+      productPrice: ['', Validators.required]
+    });
+
+    this.invoiceDetailOptionsForm = this.fb.group({
+      productId: ['', Validators.required],
+      amount: ['', Validators.required],
+      productPrice: ['', Validators.required]
+    });
+
+    this.invoiceDetailOptionsForm.valueChanges.subscribe(form => {
+      if (form.productPrice) {
+        this.invoiceDetailOptionsForm.patchValue({
+          productPrice: this.currencyPipe.transform(form.productPrice.replace(/\D/g, '').replace(/^0+/, ''), 'COP', '$ ', '1.0-0')
+        }, { emitEvent: false });
+      }
+      if (form.amount) {
+        this.invoiceDetailOptionsForm.patchValue({
+          amount: this.currencyPipe.transform(form.amount.replace(/\D/g, '').replace(/^0+/, ''), ' ', 'code', '1.0-0')
+        }, { emitEvent: false });
+      }
+    });
+
+    this.newInvoiceDetailForm.valueChanges.subscribe(form => {
+      if (form.productPrice) {
+        this.newInvoiceDetailForm.patchValue({
+          productPrice: this.currencyPipe.transform(form.productPrice.replace(/\D/g, '').replace(/^0+/, ''), 'COP', '$ ', '1.0-0')
+        }, { emitEvent: false });
+      }
+      if (form.amount) {
+        this.newInvoiceDetailForm.patchValue({
+          amount: this.currencyPipe.transform(form.amount.replace(/\D/g, '').replace(/^0+/, ''), ' ', 'code', '1.0-0')
+        }, { emitEvent: false });
+      }
+    });
   }
 
   addInvoice(): void {
-    this.productPriceList;
     let invoice = InvoiceDto.fromJS({
       id: 0,
       dateInvoice: this.newInvoiceEditor.dateInvoice,
@@ -102,12 +155,13 @@ export class InvoicesComponent implements OnInit {
   }
 
   addInvoiceDetail() {
+    this.newInvoiceDetailForm.value;
     let detail = InvoiceDetailDto.fromJS({
       id: 0,
       invoiceId: this.selectedInvoice.id,
-      amount: this.newInvoiceDetailEditor.amount,
-      product: this.newInvoiceDetailEditor.product,
-      productPrice: this.newInvoiceDetailEditor.productPrice
+      amount: Number(this.newInvoiceDetailForm.value.amount.replace(/\D/g, '').replace(/^0+/, '')),
+      product: this.newInvoiceDetailForm.value.product,
+      productPrice: Number(this.newInvoiceDetailForm.value.productPrice.replace(/\D/g, '').replace(/^0+/, ''))
     });
 
     this.invoiceDetailsClient.create(<CreateInvoiceDetailCommand>{
@@ -131,7 +185,13 @@ export class InvoicesComponent implements OnInit {
         }
 
         this.newInvoiceDetailModalRef.hide();
-        this.newInvoiceDetailEditor = {};
+        this.newInvoiceDetailForm.setValue(
+          {
+            product: '',
+            amount: '',
+            productPrice: '',
+          }, { emitEvent: false }
+        );
       },
       error => console.error(error)
     );
@@ -182,15 +242,61 @@ export class InvoicesComponent implements OnInit {
     this.newInvoiceEditor = {};
   }
 
+  onPageDataChange(event): void {
+    this.page = event;
+  }
+
+  onPageSizeChange(event): void {
+    this.pageSize = event;
+    this.page = 1;
+  }
+
+  searchFilter() {
+    var filteredItem;
+    var filteredByPlaceList = [];
+    var filteredByProviderList = [];
+    var invoicesFilteredList = [];
+
+    this.invoicesClient.get().subscribe(result => {
+      this.vm = result;
+
+      if (this.searchFilterForm.value.placeFilter.length || this.searchFilterForm.value.providerFilter.length) {
+        if (this.searchFilterForm.value.placeFilter.length) {
+          this.searchFilterForm.value.placeFilter.forEach(function (value) {
+            filteredItem = result.invoices.filter(i => i.place.id == value.id);
+            filteredByPlaceList = filteredByPlaceList.concat(filteredItem);
+          });
+        }
+
+        if (this.searchFilterForm.value.providerFilter.length) {
+          this.searchFilterForm.value.providerFilter.forEach(function (value) {
+            filteredItem = result.invoices.filter(i => i.provider.id == value.id);
+            filteredByProviderList = filteredByProviderList.concat(filteredItem);
+          });
+        }
+        invoicesFilteredList = filteredByPlaceList.concat(filteredByProviderList);
+      }
+      else {
+        invoicesFilteredList = result.invoices;
+      }
+
+      this.vm.invoices = invoicesFilteredList.filter(i => i.dateInvoice >= this.searchFilterForm.value.startDate)
+        .filter(i => i.dateInvoice <= this.searchFilterForm.value.endDate);
+
+      this.selectedInvoice = undefined;
+    });
+  }
+
   showInvoiceDetailOptionsModal(template: TemplateRef<any>, detail: InvoiceDetailDto): void {
     this.selectedDetail = detail;
-    this.invoiceDetailOptionsEditor = {
-      id: this.selectedDetail.id,
-      invoiceId: this.selectedInvoice.id,
-      amount: this.selectedDetail.amount,
-      productId: this.selectedDetail.product.id,
-      productPrice: this.selectedDetail.productPrice
-    };
+
+    this.invoiceDetailOptionsForm.setValue(
+      {
+        productId: this.selectedDetail.product.id,
+        amount: this.currencyPipe.transform(this.selectedDetail.amount, ' ', 'code', '1.0-0'),
+        productPrice: this.currencyPipe.transform(this.selectedDetail.productPrice, 'COP', '$ ', '1.0-0'),
+      }, { emitEvent: false }
+    );
 
     this.invoiceDetailOptionsModalRef = this.modalService.show(template);
   }
@@ -235,18 +341,24 @@ export class InvoicesComponent implements OnInit {
 
   updateInvoiceDetail() {
     this.invoiceDetailsClient.update(this.selectedDetail.id, <UpdateInvoiceDetailCommand>{
-      id: this.invoiceDetailOptionsEditor.id,
-      amount: this.invoiceDetailOptionsEditor.amount,
-      productId: this.invoiceDetailOptionsEditor.productId,
-      productPrice: this.invoiceDetailOptionsEditor.productPrice
+      id: this.selectedDetail.id,
+      amount: Number(this.invoiceDetailOptionsForm.value.amount.replace(/\D/g, '').replace(/^0+/, '')),
+      productId: this.invoiceDetailOptionsForm.value.productId,
+      productPrice: Number(this.invoiceDetailOptionsForm.value.productPrice.replace(/\D/g, '').replace(/^0+/, ''))
     }).subscribe(
       () => {
-        this.selectedDetail.amount = this.invoiceDetailOptionsEditor.amount;
-        this.selectedDetail.productPrice = this.invoiceDetailOptionsEditor.productPrice;
-        this.selectedDetail.product = this.productList.find(p => p.id == this.invoiceDetailOptionsEditor.productId);
+        this.selectedDetail.amount = Number(this.invoiceDetailOptionsForm.value.amount.replace(/\D/g, '').replace(/^0+/, ''));
+        this.selectedDetail.productPrice = Number(this.invoiceDetailOptionsForm.value.productPrice.replace(/\D/g, '').replace(/^0+/, ''));
+        this.selectedDetail.product = this.productList.find(p => p.id == this.invoiceDetailOptionsForm.value.productId);
 
         this.invoiceDetailOptionsModalRef.hide();
-        this.invoiceDetailOptionsEditor = {};
+        this.invoiceDetailOptionsForm.setValue(
+          {
+            productId: '',
+            amount: '',
+            productPrice: '',
+          }, { emitEvent: false }
+        );
       },
       error => console.error(error)
     );

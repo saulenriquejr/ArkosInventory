@@ -4,6 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { ReactiveFormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { NgxPaginationModule } from 'ngx-pagination';
+
+import { CurrencyPipe } from '@angular/common';
 
 import { AppComponent } from './app.component';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
@@ -20,6 +25,7 @@ import { ModalModule } from 'ngx-bootstrap/modal';
 import { ProductsAdminComponent } from './products-admin/products-admin.component';
 import { ProvidersAdminComponent } from './providers-admin/providers-admin.component';
 import { InvoicesComponent } from './invoices/invoices.component';
+import { InventoriesComponent } from './inventories/inventories.component';
 
 @NgModule({
   declarations: [
@@ -31,7 +37,8 @@ import { InvoicesComponent } from './invoices/invoices.component';
     PlacesAdminComponent,
     ProductsAdminComponent,
     ProvidersAdminComponent,
-    InvoicesComponent
+    InvoicesComponent,
+    InventoriesComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -39,6 +46,9 @@ import { InvoicesComponent } from './invoices/invoices.component';
     FontAwesomeModule,
     HttpClientModule,
     FormsModule,
+    NgSelectModule,
+    NgxPaginationModule,
+    ReactiveFormsModule,
     ApiAuthorizationModule,
     RouterModule.forRoot([
       { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -48,11 +58,12 @@ import { InvoicesComponent } from './invoices/invoices.component';
       { path: 'products', component: ProductsAdminComponent, canActivate: [AuthorizeGuard] },
       { path: 'providers', component: ProvidersAdminComponent, canActivate: [AuthorizeGuard] },
       { path: 'invoices', component: InvoicesComponent, canActivate: [AuthorizeGuard] },
+      { path: 'inventories', component: InventoriesComponent, canActivate: [AuthorizeGuard] },
     ]),
     BrowserAnimationsModule,
     ModalModule.forRoot()
   ],
-  providers: [
+  providers: [CurrencyPipe,
     { provide: HTTP_INTERCEPTORS, useClass: AuthorizeInterceptor, multi: true },
   ],
   bootstrap: [AppComponent]

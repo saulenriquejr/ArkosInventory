@@ -12,7 +12,7 @@ namespace Arkos.Application.Invoices.Queries
         public int Id { get; set; }
         public int InvoiceId { get; set; }
         public int Amount { get; set; }
-        public int ProductPrice { get; set; }
+        public decimal ProductPrice { get; set; }
         public Product Product { get; set; }
 
         public void Mapping(Profile profile)

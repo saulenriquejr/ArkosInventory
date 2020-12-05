@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Arkos.Domain.Entities;
+using Arkos.Application.Common.Exceptions;
 
 namespace Arkos.Application.Inventories.Command
 {
@@ -27,25 +28,16 @@ namespace Arkos.Application.Inventories.Command
 
         public async Task<int> Handle(CreateInventoryCommand request, CancellationToken cancellationToken)
         {
+            var placeEntity = await _context.Places.FindAsync(request.PlaceId);
+            if (placeEntity == null)
+                throw new InvalidEntityKeyException($"The Place {request.PlaceId} doesn't exist");
+
             var entity = new Inventory()
             {
                 InventoryDate = request.InventoryDate,
                 IsDraft = request.IsDraft,
                 PlaceId = request.PlaceId
             };
-
-            foreach (var inventoryDetail in request.InventoryDetails)
-            {
-                var inventoryDetailEntity = new InventoryDetail()
-                {
-                    CurrentPrice = inventoryDetail.CurrentPrice,
-                    ManualCount = inventoryDetail.ManualCount,
-                    ProductId = inventoryDetail.ProductId,
-                    TotalSale = inventoryDetail.TotalSale
-                };
-
-                entity.InventoryDetails.Add(inventoryDetailEntity);
-            }
 
             _context.Inventories.Add(entity);
 
