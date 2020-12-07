@@ -5,18 +5,20 @@ using System.Threading.Tasks;
 
 namespace Arkos.Application.Common.Interfaces
 {
-    public interface IApplicationDbContext
-    {
-        DbSet<TodoList> TodoLists { get; set; }
+	public interface IApplicationDbContext
+	{
+		DbSet<TodoList> TodoLists { get; set; }
 
-        DbSet<TodoItem> TodoItems { get; set; }
-        DbSet<Place> Places { get; set; }
-        DbSet<Product> Products { get; set; }
-        DbSet<Invoice> Invoices { get; set; }
-        DbSet<Inventory> Inventories { get; set; }
-        DbSet<InventoryDetail> InventoryDetails { get; set; }
-        DbSet<Provider> Providers { get; set; }
+		DbSet<TodoItem> TodoItems { get; set; }
+		DbSet<Place> Places { get; set; }
+		DbSet<Product> Products { get; set; }
+		DbSet<Invoice> Invoices { get; set; }
+		DbSet<InvoiceDetail> InvoiceDetails { get; set; }
+		DbSet<Inventory> Inventories { get; set; }
+		DbSet<InventoryDetail> InventoryDetails { get; set; }
+		DbSet<Provider> Providers { get; set; }
+		DbSet<ProductPrice> ProductPrices { get; set; }
 
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
-    }
+		Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+	}
 }

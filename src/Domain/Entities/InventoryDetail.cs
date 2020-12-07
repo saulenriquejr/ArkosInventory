@@ -10,5 +10,7 @@ namespace Arkos.Domain.Entities
         public int ManualCount { get; set; }
         public decimal CurrentPrice { get; set; }
         public decimal TotalSale { get; set; }
+        public int InventoryId { get; set; }
+        public Inventory Inventory { get; set; }
     }
 }

@@ -100,7 +100,8 @@ export class TodoComponent {
                 () => {
                     this.selectedList.title = this.listOptionsEditor.title,
                     this.listOptionsModalRef.hide();
-                    this.listOptionsEditor = {};
+                this.listOptionsEditor = {};
+                this.vm.lists;
                 },
                 error => console.error(error)
             );
