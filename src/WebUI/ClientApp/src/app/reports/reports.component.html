@@ -1,0 +1,68 @@
+<h1>Reportes</h1>
+
+<div *ngIf="vm">
+  <div class="row">
+    <div class="col-sm-4">
+      <div class="d-flex float-center">
+        <div class="card text-center" style="width: 100%;">
+          <form [formGroup]="searchFilterForm" style="padding:10px">
+            <div class="row">
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label for="startDatetxt">Fecha inicial:</label>
+                  <input id="startDatetxt" formControlName="startDate" name="startDate" class="form-control" bsDatepicker placeholder="ingrese fecha de inventario"
+                         required>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label for="endDatertxt">Fecha Final:</label>
+                  <input id="endDatertxt" formControlName="endDate" name="endDate" class="form-control" bsDatepicker placeholder="ingrese fecha de inventario"
+                         required>
+                </div>
+              </div>
+              <div class="col-sm-12">
+                <div class="form-group">
+                  <label for="placeFiltertxt">Local(es):</label>
+                  <ng-select [items]="placeList" id="placeFiltertxt"
+                             bindLabel="name"
+                             placeholder="selecciona local(es)"
+                             multiple="true"
+                             formControlName="placeFilter">
+                  </ng-select>
+                </div>
+                <button class="btn btn-primary" (click)="searchFilter()">Filtrar</button>
+              </div>
+            </div>
+          </form>
+          <hr />
+          <div class="row">
+            <div class="col-sm-3">
+              <ng-select [items]="pageSizeOptions"
+                         (change)="onPageSizeChange($event)">
+              </ng-select>
+            </div>
+            <div class="col-sm-9">
+              <div class="justify-content-center">
+                <pagination-controls responsive="true" previousLabel="Prev" nextLabel="Next" (pageChange)="onPageDataChange($event)">
+                </pagination-controls>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="list-group-item" *ngFor="let inventory of vm.inventories | paginate : {
+                 itemsPerPage: pageSize,
+                 currentPage: page,
+                 totalItems: count
+                 }; index as i" [ngClass]="{'active' : inventory == selectedInventory}"
+                 (click)="selectedInventory = inventory">
+              <h5 class="card-title">{{ inventory.inventoryDate | date : 'dd/MM/yyyy' }}</h5>
+              <p class="card-text">Local: {{ inventory.place.name }}</p>
+              <p class="card-text">Valor Total: {{ inventory.totalSale | currency:"COP":'$ ' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

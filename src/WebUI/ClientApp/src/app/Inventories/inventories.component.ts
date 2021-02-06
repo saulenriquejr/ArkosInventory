@@ -36,7 +36,6 @@ export class InventoriesComponent implements OnInit {
   inventoryOptionsEditor: any = {};
   inventoryOptionsModalRef: BsModalRef;
   invoiceList: InvoiceDto[];
-  newInventoryDetailEditor: any = {};
   newInventoryDetailForm: FormGroup;
   newInventoryDetailModalRef: BsModalRef;
   newInventoryEditor: any = {};
@@ -213,10 +212,10 @@ export class InventoriesComponent implements OnInit {
     let detail = InventoryDetailDto.fromJS({
       id: 0,
       inventoryId: this.selectedInventory.id,
-      manualCount: Number(this.newInventoryDetailForm.value.amount.replace(/\D/g, '').replace(/^0+/, '')),
-      product: this.newInventoryDetailEditor.product,
+      manualCount: Number(this.newInventoryDetailForm.value.manualCount.replace(/\D/g, '').replace(/^0+/, '')),
+      product: this.newInventoryDetailForm.value.product,
       currentPrice: Number(this.newInventoryDetailForm.value.currentPrice.replace(/\D/g, '').replace(/^0+/, '')),
-      totalSale: (lastCount + entries - Number(this.newInventoryDetailForm.value.amount.replace(/\D/g, '').replace(/^0+/, ''))) * Number(this.newInventoryDetailForm.value.currentPrice.replace(/\D/g, '').replace(/^0+/, ''))
+      totalSale: (lastCount + entries - Number(this.newInventoryDetailForm.value.manualCount.replace(/\D/g, '').replace(/^0+/, ''))) * Number(this.newInventoryDetailForm.value.currentPrice.replace(/\D/g, '').replace(/^0+/, ''))
     });
 
     this.inventoryDetailsClient.create(<CreateInventoryDetailCommand>{
@@ -231,7 +230,7 @@ export class InventoriesComponent implements OnInit {
         detail.id = result;
         this.selectedInventory.inventoryDetails.push(detail);
         this.selectedDetail = detail;
-
+        this.selectedInventory.totalSale += detail.totalSale;
         this.newInventoryDetailModalRef.hide();
         this.newInventoryDetailForm.setValue(
           {

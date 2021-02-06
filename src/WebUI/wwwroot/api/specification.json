@@ -1321,6 +1321,10 @@
               }
             ]
           },
+          "totalSale": {
+            "type": "number",
+            "format": "decimal"
+          },
           "inventoryDetails": {
             "type": "array",
             "nullable": true,
@@ -1640,6 +1644,10 @@
                     "$ref": "#/components/schemas/Place"
                   }
                 ]
+              },
+              "totalSale": {
+                "type": "number",
+                "format": "decimal"
               },
               "inventoryDetails": {
                 "type": "array",

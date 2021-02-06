@@ -15,6 +15,7 @@ namespace Arkos.Application.Inventories.Queries
 		public int Id { get; set; }
 		public DateTime InventoryDate { get; set; }
 		public Place Place { get; set; }
+		public decimal TotalSale { get; set; }
 		public IList<InventoryDetailDto> InventoryDetails { get; set; }
 	}
 }

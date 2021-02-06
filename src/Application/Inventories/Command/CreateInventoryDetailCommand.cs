@@ -1,4 +1,5 @@
-﻿using Arkos.Application.Common.Interfaces;
+﻿using Arkos.Application.Common.Exceptions;
+using Arkos.Application.Common.Interfaces;
 using Arkos.Domain.Entities;
 using MediatR;
 using System;
@@ -37,6 +38,15 @@ namespace Arkos.Application.Inventories.Command
 				CurrentPrice = request.CurrentPrice,
 				TotalSale = request.TotalSale
 			};
+
+			var entityInv = await _context.Inventories.FindAsync(request.InventoryId);
+
+			if (entityInv == null)
+			{
+				throw new NotFoundException(nameof(Inventory), request.InventoryId);
+			}
+
+			entityInv.TotalSale += request.TotalSale;
 
 			_context.InventoryDetails.Add(entity);
 

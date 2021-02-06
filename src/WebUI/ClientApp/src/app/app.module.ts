@@ -26,6 +26,7 @@ import { ProductsAdminComponent } from './products-admin/products-admin.componen
 import { ProvidersAdminComponent } from './providers-admin/providers-admin.component';
 import { InvoicesComponent } from './invoices/invoices.component';
 import { InventoriesComponent } from './inventories/inventories.component';
+import { ReportsComponent } from './reports/reports.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +39,8 @@ import { InventoriesComponent } from './inventories/inventories.component';
     ProductsAdminComponent,
     ProvidersAdminComponent,
     InvoicesComponent,
-    InventoriesComponent
+    InventoriesComponent,
+    ReportsComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -59,6 +61,7 @@ import { InventoriesComponent } from './inventories/inventories.component';
       { path: 'providers', component: ProvidersAdminComponent, canActivate: [AuthorizeGuard] },
       { path: 'invoices', component: InvoicesComponent, canActivate: [AuthorizeGuard] },
       { path: 'inventories', component: InventoriesComponent, canActivate: [AuthorizeGuard] },
+      { path: 'reports', component: ReportsComponent, canActivate: [AuthorizeGuard] },
     ]),
     BrowserAnimationsModule,
     ModalModule.forRoot()

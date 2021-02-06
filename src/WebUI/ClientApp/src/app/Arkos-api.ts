@@ -2114,6 +2114,7 @@ export class InventoryDto implements IInventoryDto {
     id?: number;
     inventoryDate?: Date;
     place?: Place | undefined;
+    totalSale?: number;
     inventoryDetails?: InventoryDetailDto[] | undefined;
 
     constructor(data?: IInventoryDto) {
@@ -2130,6 +2131,7 @@ export class InventoryDto implements IInventoryDto {
             this.id = _data["id"];
             this.inventoryDate = _data["inventoryDate"] ? new Date(_data["inventoryDate"].toString()) : <any>undefined;
             this.place = _data["place"] ? Place.fromJS(_data["place"]) : <any>undefined;
+            this.totalSale = _data["totalSale"];
             if (Array.isArray(_data["inventoryDetails"])) {
                 this.inventoryDetails = [] as any;
                 for (let item of _data["inventoryDetails"])
@@ -2150,6 +2152,7 @@ export class InventoryDto implements IInventoryDto {
         data["id"] = this.id;
         data["inventoryDate"] = this.inventoryDate ? this.inventoryDate.toISOString() : <any>undefined;
         data["place"] = this.place ? this.place.toJSON() : <any>undefined;
+        data["totalSale"] = this.totalSale;
         if (Array.isArray(this.inventoryDetails)) {
             data["inventoryDetails"] = [];
             for (let item of this.inventoryDetails)
@@ -2163,6 +2166,7 @@ export interface IInventoryDto {
     id?: number;
     inventoryDate?: Date;
     place?: Place | undefined;
+    totalSale?: number;
     inventoryDetails?: InventoryDetailDto[] | undefined;
 }
 
@@ -2606,6 +2610,7 @@ export class Inventory extends AuditableEntity implements IInventory {
     isDraft?: boolean;
     placeId?: number;
     place?: Place | undefined;
+    totalSale?: number;
     inventoryDetails?: InventoryDetail[] | undefined;
 
     constructor(data?: IInventory) {
@@ -2620,6 +2625,7 @@ export class Inventory extends AuditableEntity implements IInventory {
             this.isDraft = _data["isDraft"];
             this.placeId = _data["placeId"];
             this.place = _data["place"] ? Place.fromJS(_data["place"]) : <any>undefined;
+            this.totalSale = _data["totalSale"];
             if (Array.isArray(_data["inventoryDetails"])) {
                 this.inventoryDetails = [] as any;
                 for (let item of _data["inventoryDetails"])
@@ -2642,6 +2648,7 @@ export class Inventory extends AuditableEntity implements IInventory {
         data["isDraft"] = this.isDraft;
         data["placeId"] = this.placeId;
         data["place"] = this.place ? this.place.toJSON() : <any>undefined;
+        data["totalSale"] = this.totalSale;
         if (Array.isArray(this.inventoryDetails)) {
             data["inventoryDetails"] = [];
             for (let item of this.inventoryDetails)
@@ -2658,6 +2665,7 @@ export interface IInventory extends IAuditableEntity {
     isDraft?: boolean;
     placeId?: number;
     place?: Place | undefined;
+    totalSale?: number;
     inventoryDetails?: InventoryDetail[] | undefined;
 }
 

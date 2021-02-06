@@ -13,6 +13,12 @@ namespace Arkos.Infrastructure.Persistence.Configurations
                 .HasForeignKey(inventory => inventory.PlaceId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_Inventories_Places");
+
+            builder.Property(pp => pp.TotalSale)
+                .IsRequired();
+
+            builder.Property(pp => pp.TotalSale)
+                .HasColumnType("Money");
         }
     }
 }
