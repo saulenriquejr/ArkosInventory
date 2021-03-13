@@ -143,8 +143,7 @@ export class InvoicesComponent implements OnInit {
         invoice.id = result;
         this.vm.invoices.push(invoice);
         this.selectedInvoice = invoice;
-        this.newInvoiceModalRef.hide();
-        this.newInvoiceEditor = {};
+        this.cancelNewInvoice()
       },
       error => {
         let errors = JSON.parse(error.response);
@@ -175,8 +174,11 @@ export class InvoicesComponent implements OnInit {
         detail.id = result;
         this.selectedInvoice.invoiceDetails.push(detail);
         this.selectedDetail = detail;
+        var previousProduct = this.productPriceList.find(pp => pp.productId == this.selectedDetail.product.id);
+        var previousProductPrice = previousProductPrice == undefined ? 0 : previousProduct.price;
 
-        if (this.selectedDetail.productPrice != this.productPriceList.find(pp => pp.productId == this.selectedDetail.product.id).price) {
+
+        if (this.selectedDetail.productPrice != previousProductPrice) {
           this.productPricesClient.create(<CreateProductPriceCommand>{
             placeId: this.selectedInvoice.place.id,
             productId: detail.product.id,
@@ -184,16 +186,41 @@ export class InvoicesComponent implements OnInit {
           }).subscribe(result => { this.getLatestProductPrice(); }, error => console.error(error));
         }
 
-        this.newInvoiceDetailModalRef.hide();
-        this.newInvoiceDetailForm.setValue(
-          {
-            product: '',
-            amount: '',
-            productPrice: '',
-          }, { emitEvent: false }
-        );
+        this.cancelNewInvoiceDetail();
       },
       error => console.error(error)
+    );
+  }
+
+  cancelInvoiceOptions(): void {
+    this.invoiceOptionsModalRef.hide();
+    this.invoiceOptionsEditor = {};
+  }
+
+  cancelInvoiceDetailOptions(): void {
+    this.invoiceDetailOptionsModalRef.hide();
+    this.invoiceDetailOptionsForm.setValue(
+      {
+        product: '',
+        amount: '',
+        productPrice: '',
+      }, { emitEvent: false }
+    );
+  }
+
+  cancelNewInvoice(): void {
+    this.newInvoiceModalRef.hide();
+    this.newInvoiceEditor = {};
+  }
+
+  cancelNewInvoiceDetail(): void {
+    this.newInvoiceDetailModalRef.hide();
+    this.newInvoiceDetailForm.setValue(
+      {
+        product: '',
+        amount: '',
+        productPrice: '',
+      }, { emitEvent: false }
     );
   }
 
@@ -332,8 +359,7 @@ export class InvoicesComponent implements OnInit {
         this.selectedInvoice.dateInvoice = this.invoiceOptionsEditor.dateInvoice;
         this.selectedInvoice.place = this.placeList.find(pl => pl.id == this.invoiceOptionsEditor.placeId);
         this.selectedInvoice.provider = this.providerList.find(pr => pr.id == this.invoiceOptionsEditor.providerId);
-        this.invoiceOptionsModalRef.hide();
-        this.invoiceOptionsEditor = {};
+        this.cancelInvoiceOptions();
       },
       error => console.error(error)
     );
@@ -351,14 +377,7 @@ export class InvoicesComponent implements OnInit {
         this.selectedDetail.productPrice = Number(this.invoiceDetailOptionsForm.value.productPrice.replace(/\D/g, '').replace(/^0+/, ''));
         this.selectedDetail.product = this.productList.find(p => p.id == this.invoiceDetailOptionsForm.value.productId);
 
-        this.invoiceDetailOptionsModalRef.hide();
-        this.invoiceDetailOptionsForm.setValue(
-          {
-            productId: '',
-            amount: '',
-            productPrice: '',
-          }, { emitEvent: false }
-        );
+        this.cancelInvoiceDetailOptions();
       },
       error => console.error(error)
     );

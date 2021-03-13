@@ -5,7 +5,7 @@ import { faPlus, faEllipsisH, faPencilAlt } from '@fortawesome/free-solid-svg-ic
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import {
   InventoryDto, InventoriesClient, InventoriesVm, CreateInventoryCommand, UpdateInventoryCommand,
-  InventoryDetailDto, InventoryDetailsClient, CreateInventoryDetailCommand,
+  InventoryDetailDto, InventoryDetailsClient, CreateInventoryDetailCommand, UpdateInventoryDetailCommand,
   PlacesClient, PlaceDto, InvoicesClient, InvoiceDetailDto, ProductsClient, ProductPricesClient, ProductDto, ProductPriceDto,
   ProvidersClient, ProviderDto, InvoicesVm, InvoiceDto,
   InvoiceDetailsClient, InvoiceDetail
@@ -29,7 +29,6 @@ export class InventoriesComponent implements OnInit {
   faEllipsisH = faEllipsisH;
   faPencilAlt = faPencilAlt;
   inventoryDetailList: InvoiceDetailDto[] = [];
-  inventoryDetailOptionsEditor: any = {};
   inventoryDetailOptionsForm: FormGroup;
   inventoryDetailOptionsModalRef: BsModalRef;
   inventoryList: InventoryDto[];
@@ -168,8 +167,7 @@ export class InventoriesComponent implements OnInit {
       inventory.id = result;
       this.vm.inventories.push(inventory);
       this.selectedInventory = inventory;
-      this.newInventoryModalRef.hide();
-      this.newInventoryEditor = {};
+      this.cancelNewInventory();
     }, error => {
       let errors = JSON.parse(error.response);
       if (errors && errors.Title)
@@ -178,36 +176,7 @@ export class InventoriesComponent implements OnInit {
   }
 
   addInventoryDetail() {
-    var productId = this.newInventoryDetailForm.value.product.id;
-    var placeId = this.selectedInventory.place.id;
-    var inventoryDate = this.selectedInventory.inventoryDate;
-    var lastInventoryDate: Date = new Date("0001-01-01");
-    var lastCount = 0;
-    var entries = 0;
-
-    this.inventoryList = this.inventoryList.filter(i => i.inventoryDate < inventoryDate).filter(i => i.place.id == placeId);
-    for (var i = 0; i < this.inventoryList.length; i++) {
-      for (var j = 0; j < this.inventoryList[i].inventoryDetails.length; j++) {
-        if (this.inventoryList[i].inventoryDetails[j].productId == productId) {
-          lastInventoryDate = this.inventoryList[i].inventoryDate;
-          lastCount = this.inventoryList[i].inventoryDetails[j].manualCount;
-          break;
-        }
-      }
-      if (lastCount != 0) {
-        break;
-      }
-    }
-
-
-    this.invoiceList = this.invoiceList.filter(i => i.dateInvoice >= lastInventoryDate).filter(i => i.dateInvoice <= inventoryDate);
-    for (var k = 0; k < this.invoiceList.length; k++) {
-      for (var l = 0; l < this.invoiceList[k].invoiceDetails.length; l++) {
-        if (this.invoiceList[k].invoiceDetails[l].product.id == productId) {
-          entries += this.invoiceList[k].invoiceDetails[l].amount;
-        }
-      }
-    }
+    const [lastCount, entries] = this.getLastCountAndEntries(true)
 
     let detail = InventoryDetailDto.fromJS({
       id: 0,
@@ -231,16 +200,41 @@ export class InventoriesComponent implements OnInit {
         this.selectedInventory.inventoryDetails.push(detail);
         this.selectedDetail = detail;
         this.selectedInventory.totalSale += detail.totalSale;
-        this.newInventoryDetailModalRef.hide();
-        this.newInventoryDetailForm.setValue(
-          {
-            product: '',
-            manualCount: '',
-            currentPrice: '',
-          }, { emitEvent: false }
-        );
+        this.cancelNewInventoryDetail();
       },
       error => console.error(error)
+    );
+  }
+
+  cancelInventoryOptions(): void {
+    this.inventoryOptionsModalRef.hide();
+    this.inventoryOptionsEditor = {};
+  }
+
+  cancelInventoryDetailOptions(): void {
+    this.inventoryDetailOptionsModalRef.hide();
+    this.inventoryDetailOptionsForm.setValue(
+      {
+        product: '',
+        manualCount: '',
+        currentPrice: '',
+      }, { emitEvent: false }
+    );
+  }
+
+  cancelNewInventory(): void {
+    this.newInventoryModalRef.hide();
+    this.newInventoryEditor = {};
+  }
+
+  cancelNewInventoryDetail(): void {
+    this.newInventoryDetailModalRef.hide();
+    this.newInventoryDetailForm.setValue(
+      {
+        product: '',
+        manualCount: '',
+        currentPrice: '',
+      }, { emitEvent: false }
     );
   }
 
@@ -284,9 +278,39 @@ export class InventoriesComponent implements OnInit {
       result => { this.productPriceList = result.productPrices });
   }
 
-  newInventoryCancelled(): void {
-    this.newInventoryModalRef.hide();
-    this.newInventoryEditor = {};
+  getLastCountAndEntries(isNewDetail: boolean): number[] {
+    var productId = isNewDetail ? this.newInventoryDetailForm.value.product.id : this.inventoryDetailOptionsForm.value.productId;
+    var placeId = this.selectedInventory.place.id;
+    var inventoryDate = this.selectedInventory.inventoryDate;
+    var lastInventoryDate: Date = new Date("0001-01-01");
+    var lastCount = 0;
+    var entries = 0;
+
+    this.inventoryList = this.inventoryList.filter(i => i.inventoryDate < inventoryDate).filter(i => i.place.id == placeId);
+    for (var i = 0; i < this.inventoryList.length; i++) {
+      for (var j = 0; j < this.inventoryList[i].inventoryDetails.length; j++) {
+        if (this.inventoryList[i].inventoryDetails[j].productId == productId) {
+          lastInventoryDate = this.inventoryList[i].inventoryDate;
+          lastCount = this.inventoryList[i].inventoryDetails[j].manualCount;
+          break;
+        }
+      }
+      if (lastCount != 0) {
+        break;
+      }
+    }
+
+
+    this.invoiceList = this.invoiceList.filter(i => i.dateInvoice >= lastInventoryDate).filter(i => i.dateInvoice <= inventoryDate);
+    for (var k = 0; k < this.invoiceList.length; k++) {
+      for (var l = 0; l < this.invoiceList[k].invoiceDetails.length; l++) {
+        if (this.invoiceList[k].invoiceDetails[l].product.id == productId) {
+          entries += this.invoiceList[k].invoiceDetails[l].amount;
+        }
+      }
+    }
+
+    return [lastCount, entries];
   }
 
   onPageDataChange(event): void {
@@ -376,22 +400,32 @@ export class InventoriesComponent implements OnInit {
     );
   }
 
-  //updateInventoryDetail() {
-  //  this.inventoryDetailsClient.update(this.selectedDetail.id, <UpdateInventoryDetailCommand>{
-  //    id: this.selectedDetail.id,
-  //    manualCount: this.inventoryDetailOptionsEditor.amount,
-  //    productId: this.inventoryDetailOptionsEditor.productId,
-  //    productPrice: this.inventoryDetailOptionsEditor.productPrice
-  //  }).subscribe(
-  //    () => {
-  //      this.selectedDetail.amount = this.inventoryDetailOptionsEditor.amount;
-  //      this.selectedDetail.productPrice = this.inventoryDetailOptionsEditor.productPrice;
-  //      this.selectedDetail.product = this.productList.find(p => p.id == this.inventoryDetailOptionsEditor.productId);
+  updateInventoryDetail() {
+    const [lastCount, entries] = this.getLastCountAndEntries(false);
+    let updatedDetail = InventoryDetailDto.fromJS({
+      id: this.selectedDetail.id,
+      inventoryId: this.selectedInventory.id,
+      manualCount: Number(this.inventoryDetailOptionsForm.value.manualCount.replace(/\D/g, '').replace(/^0+/, '')),
+      productId: this.inventoryDetailOptionsForm.value.productId,
+      currentPrice: Number(this.inventoryDetailOptionsForm.value.currentPrice.replace(/\D/g, '').replace(/^0+/, '')),
+      totalSale: (lastCount + entries - Number(this.inventoryDetailOptionsForm.value.manualCount.replace(/\D/g, '').replace(/^0+/, ''))) * Number(this.inventoryDetailOptionsForm.value.currentPrice.replace(/\D/g, '').replace(/^0+/, ''))
+    });
 
-  //      this.inventoryDetailOptionsModalRef.hide();
-  //      this.inventoryDetailOptionsEditor = {};
-  //    },
-  //    error => console.error(error)
-  //  );
-  //}
+    this.inventoryDetailsClient.update(this.selectedDetail.id, <UpdateInventoryDetailCommand>{
+      id: updatedDetail.id,
+      manualCount: updatedDetail.manualCount,
+      productId: updatedDetail.productId,
+      currentPrice: updatedDetail.currentPrice,
+      totalSale: updatedDetail.totalSale
+    }).subscribe(
+      () => {
+        this.selectedDetail.manualCount = updatedDetail.manualCount;
+        this.selectedDetail.currentPrice = updatedDetail.currentPrice;
+        this.selectedDetail.totalSale = updatedDetail.totalSale;
+        this.selectedDetail.product = this.productList.find(p => p.id == updatedDetail.productId);
+        this.cancelInventoryDetailOptions();
+      },
+      error => console.error(error)
+    );
+  }
 }

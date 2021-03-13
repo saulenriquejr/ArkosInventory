@@ -172,6 +172,54 @@
       }
     },
     "/api/InventoryDetails/{id}": {
+      "put": {
+        "tags": [
+          "InventoryDetails"
+        ],
+        "operationId": "InventoryDetails_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInventoryDetailCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
       "delete": {
         "tags": [
           "InventoryDetails"
@@ -1774,6 +1822,32 @@
             "format": "int32"
           },
           "manualCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "currentPrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "totalSale": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "UpdateInventoryDetailCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "manualCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productId": {
             "type": "integer",
             "format": "int32"
           },

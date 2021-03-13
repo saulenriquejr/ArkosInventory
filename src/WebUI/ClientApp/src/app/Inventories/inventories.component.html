@@ -98,7 +98,7 @@
                       <h5 class="card-title">{{ detail.product.name }}</h5>
                       <p class="card-text">Cantidad: {{ detail.manualCount | currency:' ':'code':'1.0-0' }}</p>
                       <p class="card-text">Precio: {{ detail.currentPrice | currency:"COP":'$ ' }}</p>
-                      <p class="card-text">Vendidos: {{ detail.totalSale | currency:"COP":'$ ' }}</p>
+                      <p class="card-text">Venta Total: {{ detail.totalSale | currency:"COP":'$ ' }}</p>
                     </div>
                     <div class="col-3">
                       <button id="DetailOptions" title="Detail Options..."
@@ -123,7 +123,7 @@
 <ng-template #newInventoryModalTemplate>
   <div class="modal-header clearfix">
     <h4 class="modal-title float-left">Agregar Inventario</h4>
-    <button type="button" class="close float-right" aria-label="Close" (click)="newInventoryCancelled()">
+    <button type="button" class="close float-right" aria-label="Close" (click)="cancelNewInventory()">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
@@ -147,7 +147,7 @@
       </div>
       <div class="modal-footer">
         <div class="text-right">
-          <button class="btn btn-default" (click)="newInventoryCancelled()">Cancelar</button>
+          <button class="btn btn-default" (click)="cancelNewInventory()">Cancelar</button>
           <button class="btn btn-primary" (click)="addInventory()">Finalizar</button>
         </div>
       </div>
@@ -159,7 +159,7 @@
 <ng-template #newInventoryDetailModalTemplate>
   <div class="modal-header clearfix">
     <h4 class="modal-title float-left">Agregar Producto</h4>
-    <button type="button" class="close float-right" aria-label="Close" (click)="newInventoryDetailModalRef.hide()">
+    <button type="button" class="close float-right" aria-label="Close" (click)="cancelNewInventoryDetail()">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
@@ -187,7 +187,7 @@
       </div>
       <div class="modal-footer">
         <div class="text-right">
-          <button class="btn btn-default" (click)="newInventoryDetailModalRef.hide()">Cancelar</button>
+          <button class="btn btn-default" (click)="cancelNewInventoryDetail()">Cancelar</button>
           <button class="btn btn-primary" (click)="addInventoryDetail()">Agregar</button>
         </div>
       </div>
@@ -198,7 +198,7 @@
 <ng-template #InventoryOptionsModalTemplate>
   <div class="modal-header clearfix">
     <h4 class="modal-title float-left">Editar Inventario</h4>
-    <button type="button" class="close float-right" aria-label="Close" (click)="inventoryOptionsModalRef.hide()">
+    <button type="button" class="close float-right" aria-label="Close" (click)="cancelInventoryOptions()">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
@@ -225,7 +225,7 @@
             <button class="btn btn-default text-danger" (click)="confirmDeleteInventory(deleteInventoryModalTemplate)">Eliminar</button>
           </div>
           <div class="float-right">
-            <button class="btn btn-default" (click)="inventoryOptionsModalRef.hide()">Cancelar</button>
+            <button class="btn btn-default" (click)="cancelInventoryOptions()">Cancelar</button>
             <button class="btn btn-primary" (click)="updateInventory()">Actualizar</button>
           </div>
         </div>
@@ -256,7 +256,7 @@
 <ng-template #InventoryDetailOptionsModalTemplate>
   <div class="modal-header clearfix">
     <h4 class="modal-title float-left">Editar Producto</h4>
-    <button type="button" class="close float-right" aria-label="Close" (click)="inventoryDetailOptionsModalRef.hide()">
+    <button type="button" class="close float-right" aria-label="Close" (click)="cancelInventoryDetailOptions()">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
@@ -287,7 +287,7 @@
             <button class="btn btn-default text-danger" (click)="confirmDeleteInventoryDetail(deleteInventoryDetailModalTemplate)">Eliminar</button>
           </div>
           <div class="float-right">
-            <button class="btn btn-default" (click)="inventoryDetailOptionsModalRef.hide()">Cancelar</button>
+            <button class="btn btn-default" (click)="cancelInventoryDetailOptions()">Cancelar</button>
             <button class="btn btn-primary" (click)="updateInventoryDetail()">Actualizar</button>
           </div>
         </div>

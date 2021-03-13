@@ -37,6 +37,16 @@ namespace Arkos.Application.Inventories.Command
                 throw new NotFoundException(nameof(InventoryDetail), request.Id);
             }
 
+            var entityInv = await _context.Inventories.FindAsync(entity.InventoryId);
+
+            if (entityInv == null)
+            {
+                throw new NotFoundException(nameof(Inventory), entity.InventoryId);
+            }
+
+            entityInv.TotalSale -= entity.TotalSale;
+
+
             _context.InventoryDetails.Remove(entity);
 
             await _context.SaveChangesAsync(cancellationToken);

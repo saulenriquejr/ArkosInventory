@@ -137,7 +137,7 @@
 <ng-template #newInvoiceModalTemplate>
   <div class="modal-header clearfix">
     <h4 class="modal-title float-left">Agregar Factura</h4>
-    <button type="button" class="close float-right" aria-label="Close" (click)="newInvoiceCancelled()">
+    <button type="button" class="close float-right" aria-label="Close" (click)="cancelNewInvoice()">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
@@ -169,7 +169,7 @@
       </div>
       <div class="modal-footer">
         <div class="text-right">
-          <button class="btn btn-default" (click)="newInvoiceCancelled()">Cancelar</button>
+          <button class="btn btn-default" (click)="cancelNewInvoice()">Cancelar</button>
           <button class="btn btn-primary" (click)="addInvoice()">Finalizar</button>
         </div>
       </div>
@@ -180,7 +180,7 @@
 <ng-template #newInvoiceDetailModalTemplate>
   <div class="modal-header clearfix">
     <h4 class="modal-title float-left">Agregar Producto</h4>
-    <button type="button" class="close float-right" aria-label="Close" (click)="newInvoiceDetailModalRef.hide()">
+    <button type="button" class="close float-right" aria-label="Close" (click)="cancelNewInvoiceDetail()">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
@@ -209,7 +209,7 @@
       </div>
       <div class="modal-footer">
         <div class="text-right">
-          <button class="btn btn-default" (click)="newInvoiceDetailModalRef.hide()">Cancelar</button>
+          <button class="btn btn-default" (click)="cancelNewInvoiceDetail()">Cancelar</button>
           <button class="btn btn-primary" (click)="addInvoiceDetail()">Agregar</button>
         </div>
       </div>
@@ -220,7 +220,7 @@
 <ng-template #InvoiceOptionsModalTemplate>
   <div class="modal-header clearfix">
     <h4 class="modal-title float-left">Editar Factura</h4>
-    <button type="button" class="close float-right" aria-label="Close" (click)="invoiceOptionsModalRef.hide()">
+    <button type="button" class="close float-right" aria-label="Close" (click)="cancelInvoiceOptions()">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
@@ -253,7 +253,7 @@
             <button class="btn btn-default text-danger" (click)="confirmDeleteInvoice(deleteInvoiceModalTemplate)">Eliminar</button>
           </div>
           <div class="float-right">
-            <button class="btn btn-default" (click)="invoiceOptionsModalRef.hide()">Cancelar</button>
+            <button class="btn btn-default" (click)="cancelInvoiceOptions()">Cancelar</button>
             <button class="btn btn-primary" (click)="updateInvoice()">Actualizar</button>
           </div>
         </div>
@@ -284,7 +284,7 @@
 <ng-template #InvoiceDetailOptionsModalTemplate>
   <div class="modal-header clearfix">
     <h4 class="modal-title float-left">Editar Producto</h4>
-    <button type="button" class="close float-right" aria-label="Close" (click)="invoiceDetailOptionsModalRef.hide()">
+    <button type="button" class="close float-right" aria-label="Close" (click)="cancelInvoiceDetailOptions()">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
@@ -315,7 +315,7 @@
             <button class="btn btn-default text-danger" (click)="confirmDeleteInvoiceDetail(deleteInvoiceDetailModalTemplate)">Eliminar</button>
           </div>
           <div class="float-right">
-            <button class="btn btn-default" (click)="invoiceDetailOptionsModalRef.hide()">Cancelar</button>
+            <button class="btn btn-default" (click)="cancelInvoiceDetailOptions()">Cancelar</button>
             <button class="btn btn-primary" (click)="updateInvoiceDetail()">Actualizar</button>
           </div>
         </div>

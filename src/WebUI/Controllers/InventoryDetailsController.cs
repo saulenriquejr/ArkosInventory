@@ -1,4 +1,5 @@
 ﻿using Arkos.Application.Inventories.Command;
+using Arkos.Application.Invoices.Command;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -17,18 +18,18 @@ namespace Arkos.WebUI.Controllers
 			return await Mediator.Send(command);
 		}
 
-		//[HttpPut("{id}")]
-		//public async Task<ActionResult> Update(int id, UpdateInvoiceDetailCommand command)
-		//{
-		//	if (id != command.Id)
-		//	{
-		//		return BadRequest();
-		//	}
+		[HttpPut("{id}")]
+		public async Task<ActionResult> Update(int id, UpdateInventoryDetailCommand command)
+		{
+			if (id != command.Id)
+			{
+				return BadRequest();
+			}
 
-		//	await Mediator.Send(command);
+			await Mediator.Send(command);
 
-		//	return NoContent();
-		//}
+			return NoContent();
+		}
 
 		[HttpDelete("{id}")]
 		public async Task<ActionResult> Delete(int id)
