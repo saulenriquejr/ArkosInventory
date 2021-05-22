@@ -25,7 +25,7 @@ import { ModalModule } from 'ngx-bootstrap/modal';
 import { ProductsAdminComponent } from './products-admin/products-admin.component';
 import { ProvidersAdminComponent } from './providers-admin/providers-admin.component';
 import { InvoicesComponent } from './invoices/invoices.component';
-import { InventoriesComponent } from './inventories/inventories.component';
+import { InventoriesComponent } from './Inventories/inventories.component';
 
 @NgModule({
   declarations: [
