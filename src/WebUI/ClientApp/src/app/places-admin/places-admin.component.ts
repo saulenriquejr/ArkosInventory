@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { PlacesVm, PlacesClient, PlaceDto } from '../arkos-api';
+import { PlacesVm, PlacesClient, PlaceDto } from '../Arkos-api';
 import { faPlus, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 
 @Component({

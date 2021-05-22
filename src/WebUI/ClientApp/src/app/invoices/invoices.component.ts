@@ -7,7 +7,7 @@ import {
   PlacesClient, PlaceDto, InvoicesClient, InvoiceDetailDto, ProductsClient, ProductPricesClient, ProductDto, ProductPriceDto, CreateInvoiceCommand,
   ProvidersClient, ProviderDto, InvoicesVm, InvoiceDto,
   UpdateInvoiceCommand, InvoiceDetailsClient, CreateInvoiceDetailCommand, InvoiceDetail, UpdateInvoiceDetailCommand, CreateProductPriceCommand, ProductPrice
-} from '../arkos-api';
+} from '../Arkos-api';
 
 @Component({
   selector: 'app-invoices',
