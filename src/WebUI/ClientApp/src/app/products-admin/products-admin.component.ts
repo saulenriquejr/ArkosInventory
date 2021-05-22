@@ -1,5 +1,5 @@
 import { Component, TemplateRef } from '@angular/core';
-import { ProductsVm, ProductDto, ProductsClient, CreateProductCommand, UpdateProductCommand } from '../arkos-api';
+import { ProductsVm, ProductDto, ProductsClient, CreateProductCommand, UpdateProductCommand } from '../Arkos-api';
 import { faPlus, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 

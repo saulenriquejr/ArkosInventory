@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { WeatherForecastClient, WeatherForecast } from "../arkos-api";
+import { WeatherForecastClient, WeatherForecast } from "../Arkos-api";
 
 @Component({
   selector: 'app-fetch-data',

@@ -1,5 +1,5 @@
 import { Component, TemplateRef } from '@angular/core';
-import { ProvidersVm, ProviderDto, ProvidersClient, CreateProviderCommand, UpdateProviderCommand } from '../arkos-api';
+import { ProvidersVm, ProviderDto, ProvidersClient, CreateProviderCommand, UpdateProviderCommand } from '../Arkos-api';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { faPlus, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 

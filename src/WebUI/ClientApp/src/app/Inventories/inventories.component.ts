@@ -9,7 +9,7 @@ import {
   PlacesClient, PlaceDto, InvoicesClient, InvoiceDetailDto, ProductsClient, ProductPricesClient, ProductDto, ProductPriceDto,
   ProvidersClient, ProviderDto, InvoicesVm, InvoiceDto,
   InvoiceDetailsClient, InvoiceDetail
-} from '../arkos-api';
+} from '../Arkos-api';
 import { Data } from 'ngx-bootstrap/positioning/models';
 import { moment } from 'ngx-bootstrap/chronos/test/chain';
 
